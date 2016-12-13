@@ -1,0 +1,1 @@
+Unzip node_modules.zip in node_modules (with subdirectory 'react' and 'react-native' and other folders for add-ins).

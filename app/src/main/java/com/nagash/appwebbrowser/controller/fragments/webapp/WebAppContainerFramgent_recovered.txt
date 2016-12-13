@@ -1,0 +1,574 @@
+package com.nagash.appwebbrowser.controller.fragments.webapp;
+
+import android.content.res.Resources;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import com.android.tools.fd.runtime.IncrementalChange;
+import com.android.tools.fd.runtime.InstantReloadException;
+import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.ReactInstanceManager.ReactInstanceEventListener;
+import com.facebook.react.ReactRootView;
+import com.facebook.react.bridge.ReactContext;
+import com.nagash.appwebbrowser.controller.MainActivity;
+import com.nagash.appwebbrowser.controller.MainFragment;
+import com.nagash.appwebbrowser.controller.fragments.webapp.reactnative.ReactFragment;
+import com.nagash.appwebbrowser.model.connection.AppBundleDownloadHandler;
+import com.nagash.appwebbrowser.model.connection.AppBundleDownloader;
+import com.nagash.appwebbrowser.model.connection.CentralConnection;
+import com.nagash.appwebbrowser.model.webapp.FavoriteAppsManager;
+import com.nagash.appwebbrowser.model.webapp.WebApp;
+import java.io.File;
+import protobuf.app.App.WebApp;
+
+public class WebAppContainerFragment
+  extends MainFragment
+  implements AppBundleDownloadHandler
+{
+  public static final long serialVersionUID = 0L;
+  public int bottomBackup;
+  private FavoriteAppsManager favoriteAppsManager;
+  public boolean favoriteToggle;
+  private FrameLayout fragmentContainer;
+  public boolean isFullscreen;
+  public MenuItem menuItemClose;
+  public MenuItem menuItemFavourites;
+  public MenuItem menuItemFullscreen;
+  private ProgressBar progressBarWebApp;
+  private ReactFragment reactFragment;
+  private boolean runningWebApp;
+  private TextView textViewWebApp;
+  public int topBackup;
+  private WebApp webApp;
+  private RelativeLayout webAppFragmentMainLayout;
+
+  public WebAppContainerFragment() {}
+
+  WebAppContainerFragment(Object[] paramArrayOfObject, InstantReloadException paramInstantReloadException) {}
+
+  private void loadFavorite()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("loadFavorite.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      if ((this.webApp != null) && (this.webApp.getId() != null))
+      {
+        this.favoriteAppsManager.loadPreferences();
+        this.favoriteToggle = this.favoriteAppsManager.isFavorite(this.webApp);
+      }
+    }
+  }
+
+  private void runCachedApp()
+  {
+    Object localObject = $change;
+    if (localObject != null) {
+      ((IncrementalChange)localObject).access$dispatch("runCachedApp.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      showAppLoading();
+      this.reactFragment = ReactFragment.newInstance(this, this.webApp);
+      localObject = getActivity().getSupportFragmentManager().beginTransaction();
+      ((FragmentTransaction)localObject).add(2131558565, this.reactFragment);
+      ((FragmentTransaction)localObject).hide(this.reactFragment);
+      ((FragmentTransaction)localObject).commit();
+      this.reactFragment.setReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener()
+      {
+        public static final long serialVersionUID = 0L;
+
+        public void onReactContextInitialized(ReactContext paramAnonymousReactContext)
+        {
+          IncrementalChange localIncrementalChange = $change;
+          if (localIncrementalChange != null) {
+            localIncrementalChange.access$dispatch("onReactContextInitialized.(Lcom/facebook/react/bridge/ReactContext;)V", new Object[] { this, paramAnonymousReactContext });
+          }
+          for (;;)
+          {
+            return;
+            paramAnonymousReactContext = WebAppContainerFragment.this.getActivity().getSupportFragmentManager().beginTransaction();
+            paramAnonymousReactContext.show(WebAppContainerFragment.access$000(WebAppContainerFragment.this));
+            paramAnonymousReactContext.commit();
+            WebAppContainerFragment.this.hideAppLoading();
+            WebAppContainerFragment.access$102(WebAppContainerFragment.this, true);
+            WebAppContainerFragment.this.getActivity().invalidateOptionsMenu();
+          }
+        }
+      });
+    }
+  }
+
+  private void saveFavorite()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("saveFavorite.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      if ((this.webApp != null) && (this.webApp.getId() != null))
+      {
+        this.favoriteAppsManager.setFavorite(this.webApp, this.favoriteToggle);
+        this.favoriteAppsManager.savePreferences();
+      }
+    }
+  }
+
+  private void startApp()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("startApp.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      if ((getActivity() != null) && (this.webApp != null) && (!this.runningWebApp))
+      {
+        showAppLoading();
+        if (!isLastVersionCached())
+        {
+          showAppDownloadin();
+          new AppBundleDownloader(getActivity(), this).startDownload(this.webApp.getId());
+        }
+        else
+        {
+          runCachedApp();
+        }
+      }
+    }
+  }
+
+  private void updateFavoriteIcon()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("updateFavoriteIcon.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      if (this.menuItemFavourites != null)
+      {
+        loadFavorite();
+        if (this.favoriteToggle) {
+          this.menuItemFavourites.setIcon(getResources().getDrawable(2130837639));
+        } else {
+          this.menuItemFavourites.setIcon(getResources().getDrawable(2130837640));
+        }
+      }
+    }
+  }
+
+  public boolean closeApp()
+  {
+    boolean bool = true;
+    Object localObject = $change;
+    if (localObject != null) {
+      bool = ((Boolean)((IncrementalChange)localObject).access$dispatch("closeApp.()Z", new Object[] { this })).booleanValue();
+    }
+    for (;;)
+    {
+      return bool;
+      super.setTitle(2131165309);
+      if ((this.runningWebApp) && (this.webApp != null))
+      {
+        this.reactFragment.close();
+        localObject = getActivity().getSupportFragmentManager().beginTransaction();
+        ((FragmentTransaction)localObject).hide(this.reactFragment);
+        ((FragmentTransaction)localObject).remove(this.reactFragment);
+        ((FragmentTransaction)localObject).commit();
+        showAppNotLoaded();
+        this.reactFragment = null;
+        this.runningWebApp = false;
+        getActivity().invalidateOptionsMenu();
+      }
+      else
+      {
+        bool = false;
+      }
+    }
+  }
+
+  public void enterFullscreen()
+  {
+    Object localObject = $change;
+    if (localObject != null) {
+      ((IncrementalChange)localObject).access$dispatch("enterFullscreen.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      if (!this.isFullscreen)
+      {
+        this.isFullscreen = true;
+        getMainActivity().setFullScreen(true);
+        localObject = new DisplayMetrics();
+        ((WindowManager)getActivity().getSystemService("window")).getDefaultDisplay().getMetrics((DisplayMetrics)localObject);
+        int i = ((DisplayMetrics)localObject).heightPixels;
+        this.topBackup = this.fragmentContainer.getTop();
+        this.bottomBackup = this.fragmentContainer.getBottom();
+        this.fragmentContainer.setTop(0);
+        this.fragmentContainer.setBottom(i);
+        this.webAppFragmentMainLayout.setTop(0);
+        this.webAppFragmentMainLayout.setBottom(i);
+        if (this.reactFragment != null)
+        {
+          this.reactFragment.getReactRootView().setTop(0);
+          this.reactFragment.getReactRootView().setBottom(i);
+        }
+      }
+    }
+  }
+
+  public void exitFullscreen()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("exitFullscreen.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      if (this.isFullscreen)
+      {
+        this.isFullscreen = false;
+        getMainActivity().setFullScreen(false);
+        this.fragmentContainer.setTop(this.topBackup);
+        this.fragmentContainer.setBottom(this.bottomBackup);
+        this.webAppFragmentMainLayout.setTop(this.topBackup);
+        this.webAppFragmentMainLayout.setBottom(this.bottomBackup);
+        if (this.reactFragment != null)
+        {
+          this.reactFragment.getReactRootView().setTop(this.topBackup);
+          this.reactFragment.getReactRootView().setBottom(this.bottomBackup);
+        }
+      }
+    }
+  }
+
+  public ReactFragment getReactFragment()
+  {
+    Object localObject = $change;
+    if (localObject != null) {}
+    for (localObject = (ReactFragment)((IncrementalChange)localObject).access$dispatch("getReactFragment.()Lcom/nagash/appwebbrowser/controller/fragments/webapp/reactnative/ReactFragment;", new Object[] { this });; localObject = this.reactFragment) {
+      return (ReactFragment)localObject;
+    }
+  }
+
+  public ReactInstanceManager getReactInstanceManager()
+  {
+    Object localObject = $change;
+    if (localObject != null) {
+      localObject = (ReactInstanceManager)((IncrementalChange)localObject).access$dispatch("getReactInstanceManager.()Lcom/facebook/react/ReactInstanceManager;", new Object[] { this });
+    }
+    for (;;)
+    {
+      return (ReactInstanceManager)localObject;
+      if (this.reactFragment != null) {
+        localObject = this.reactFragment.getReactInstanceManager();
+      } else {
+        localObject = null;
+      }
+    }
+  }
+
+  public void hideAppLoading()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("hideAppLoading.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      this.progressBarWebApp.setVisibility(8);
+      this.textViewWebApp.setVisibility(8);
+    }
+  }
+
+  public boolean isFullscreen()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {}
+    for (boolean bool = ((Boolean)localIncrementalChange.access$dispatch("isFullscreen.()Z", new Object[] { this })).booleanValue();; bool = this.isFullscreen) {
+      return bool;
+    }
+  }
+
+  public boolean isLastVersionCached()
+  {
+    boolean bool = true;
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      bool = ((Boolean)localIncrementalChange.access$dispatch("isLastVersionCached.()Z", new Object[] { this })).booleanValue();
+    }
+    for (;;)
+    {
+      return bool;
+      if (this.webApp != null)
+      {
+        if (!new File(CentralConnection.getCachedBundlePath(this.webApp)).exists()) {
+          bool = false;
+        }
+      }
+      else {
+        bool = false;
+      }
+    }
+  }
+
+  public void onActivityCreated(@Nullable Bundle paramBundle)
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("onActivityCreated.(Landroid/os/Bundle;)V", new Object[] { this, paramBundle });
+    }
+    for (;;)
+    {
+      return;
+      super.onActivityCreated(paramBundle);
+      this.progressBarWebApp = ((ProgressBar)getActivity().findViewById(2131558566));
+      this.textViewWebApp = ((TextView)getActivity().findViewById(2131558567));
+      this.fragmentContainer = ((FrameLayout)getActivity().findViewById(2131558565));
+      this.webAppFragmentMainLayout = ((RelativeLayout)getActivity().findViewById(2131558564));
+      showAppNotLoaded();
+      if (this.webApp != null) {
+        startApp();
+      }
+      this.favoriteAppsManager = new FavoriteAppsManager(getActivity());
+      setHasOptionsMenu(true);
+    }
+  }
+
+  public void onAppBundleDownloadFailed(String paramString)
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("onAppBundleDownloadFailed.(Ljava/lang/String;)V", new Object[] { this, paramString });
+    }
+  }
+
+  public void onAppBundleDownloaded(String paramString)
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("onAppBundleDownloaded.(Ljava/lang/String;)V", new Object[] { this, paramString });
+    }
+    for (;;)
+    {
+      return;
+      runCachedApp();
+    }
+  }
+
+  public boolean onBackPressed()
+  {
+    boolean bool = true;
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      bool = ((Boolean)localIncrementalChange.access$dispatch("onBackPressed.()Z", new Object[] { this })).booleanValue();
+    }
+    for (;;)
+    {
+      return bool;
+      if ((this.reactFragment != null) && (this.runningWebApp)) {
+        this.reactFragment.onBackPressed();
+      } else {
+        bool = false;
+      }
+    }
+  }
+
+  public void onCreateOptionsMenu(Menu paramMenu, MenuInflater paramMenuInflater)
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("onCreateOptionsMenu.(Landroid/view/Menu;Landroid/view/MenuInflater;)V", new Object[] { this, paramMenu, paramMenuInflater });
+    }
+    for (;;)
+    {
+      return;
+      super.onCreateOptionsMenu(paramMenu, paramMenuInflater);
+      if (this.runningWebApp)
+      {
+        paramMenuInflater.inflate(2131623941, paramMenu);
+        this.menuItemFavourites = paramMenu.findItem(2131558628);
+        this.menuItemFullscreen = paramMenu.findItem(2131558632);
+        this.menuItemClose = paramMenu.findItem(2131558633);
+        updateFavoriteIcon();
+      }
+    }
+  }
+
+  public View onCreateView(LayoutInflater paramLayoutInflater, ViewGroup paramViewGroup, Bundle paramBundle)
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {}
+    for (paramLayoutInflater = (View)localIncrementalChange.access$dispatch("onCreateView.(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;", new Object[] { this, paramLayoutInflater, paramViewGroup, paramBundle });; paramLayoutInflater = paramLayoutInflater.inflate(2130968627, paramViewGroup, false)) {
+      return paramLayoutInflater;
+    }
+  }
+
+  public void onFragmentShown()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("onFragmentShown.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      super.onFragmentShown();
+      getMainActivity().getFabProximity().hide();
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    boolean bool1 = true;
+    boolean bool2 = false;
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      bool1 = ((Boolean)localIncrementalChange.access$dispatch("onOptionsItemSelected.(Landroid/view/MenuItem;)Z", new Object[] { this, paramMenuItem })).booleanValue();
+    }
+    for (;;)
+    {
+      return bool1;
+      switch (paramMenuItem.getItemId())
+      {
+      case 2131558629:
+      case 2131558630:
+      case 2131558631:
+      default:
+        bool1 = bool2;
+        break;
+      case 2131558628:
+        if (!this.favoriteToggle) {}
+        for (;;)
+        {
+          this.favoriteToggle = bool1;
+          saveFavorite();
+          updateFavoriteIcon();
+          bool1 = bool2;
+          break;
+          bool1 = false;
+        }
+      case 2131558632:
+        if (!this.isFullscreen)
+        {
+          enterFullscreen();
+          bool1 = bool2;
+        }
+        else
+        {
+          exitFullscreen();
+          bool1 = bool2;
+        }
+        break;
+      case 2131558633:
+        bool1 = bool2;
+        if (this.runningWebApp)
+        {
+          bool1 = bool2;
+          if (this.reactFragment != null)
+          {
+            closeApp();
+            bool1 = bool2;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  public void showAppDescr(App.WebApp paramWebApp)
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("showAppDescr.(Lprotobuf/app/App$WebApp;)V", new Object[] { this, paramWebApp });
+    }
+  }
+
+  public void showAppDownloadin()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("showAppDownloadin.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      this.progressBarWebApp.setVisibility(0);
+      this.textViewWebApp.setText("Downloading WebApp...");
+      this.textViewWebApp.setVisibility(0);
+    }
+  }
+
+  public void showAppLoading()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("showAppLoading.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      this.progressBarWebApp.setVisibility(0);
+      this.textViewWebApp.setText("Starting WebApp...");
+      this.textViewWebApp.setVisibility(0);
+    }
+  }
+
+  public void showAppNotLoaded()
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("showAppNotLoaded.()V", new Object[] { this });
+    }
+    for (;;)
+    {
+      return;
+      this.progressBarWebApp.setVisibility(8);
+      this.textViewWebApp.setText("No app loaded");
+      this.textViewWebApp.setVisibility(0);
+    }
+  }
+
+  public void startApp(WebApp paramWebApp)
+  {
+    IncrementalChange localIncrementalChange = $change;
+    if (localIncrementalChange != null) {
+      localIncrementalChange.access$dispatch("startApp.(Lcom/nagash/appwebbrowser/model/webapp/WebApp;)V", new Object[] { this, paramWebApp });
+    }
+    for (;;)
+    {
+      return;
+      this.webApp = paramWebApp;
+      super.setTitle("Running: " + paramWebApp.getName());
+      startApp();
+    }
+  }
+}

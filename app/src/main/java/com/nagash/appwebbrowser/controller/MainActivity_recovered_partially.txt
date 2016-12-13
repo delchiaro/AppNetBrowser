@@ -1,0 +1,555 @@
+package com.nagash.appwebbrowser.controller;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.view.ViewGroupCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import com.estimote.sdk.eddystone.Eddystone;
+import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
+import com.nagash.appwebbrowser.R;
+import com.nagash.appwebbrowser.model.beacon.eddystoneProximity.EddystoneProximityListener;
+import com.nagash.appwebbrowser.model.beacon.eddystoneProximity.EddystoneProximityManager;
+import com.nagash.appwebbrowser.model.beacon.eddystoneScanner.EddystoneScanner;
+import com.nagash.appwebbrowser.model.beacon.eddystoneScanner.EddystoneScannerListener;
+import com.nagash.appwebbrowser.model.connection.AppListDownloadHandler;
+import com.nagash.appwebbrowser.model.connection.CentralConnection;
+import com.nagash.appwebbrowser.model.localization.LocationManager;
+import com.nagash.appwebbrowser.model.localization.LocationEventListener;
+import com.nagash.appwebbrowser.model.geofencing.options.EmptyListAdvertiseOptions;
+import com.nagash.appwebbrowser.model.geofencing.GeoEvent;
+import com.nagash.appwebbrowser.model.geofencing.GeofenceListener;
+import com.nagash.appwebbrowser.model.geofencing.GeofenceManager;
+import com.nagash.appwebbrowser.model.geofencing.GeofenceObject;
+import com.nagash.appwebbrowser.model.webapp.WebApp;
+import com.roughike.bottombar.BottomBar;
+import com.roughike.bottombar.OnTabReselectListener;
+import com.roughike.bottombar.OnTabSelectListener;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+
+import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
+
+/**
+ * Created by nagash on 14/09/16.
+ */
+public class MainActivity
+        extends AppCompatActivity
+
+        implements
+        DefaultHardwareBackBtnHandler,
+        AppListDownloadHandler,
+        LocationEventListener,
+        GeofenceListener<WebApp>,
+        EddystoneProximityListener,
+        EddystoneScannerListener
+{
+
+    private static MainActivity mainActivity = null;
+    protected static MainActivity getMainActivity() {
+        return mainActivity;
+    }
+    private static void setMainActivity(MainActivity mainActivity) {
+        MainActivity.mainActivity = mainActivity;
+    }
+    // * * * * * Managers * * * * *
+
+    FragmentsController fragCtrl = new FragmentsController(this);
+    CentralConnection centralConnection = CentralConnection.instance();
+    LocationManager locationManager = new LocationManager(this, this);
+    GeofenceManager<WebApp> geofenceManager = new GeofenceManager(locationManager, this, AdvertiseOptions.ADVERTISE_ON_EMPTY_LIST);
+
+
+
+
+
+
+    // * * * * * UI COMPONENTS * * * * *
+    private BottomBar  bottomBar  = null;
+    private Toolbar    toolbar    = null;
+
+    public BottomBar   getBottomBar()      { return bottomBar;     }
+    public Toolbar     getToolbar()        { return toolbar;       }
+
+    private RelativeLayout mainFragmentContainer;
+    private RelativeLayout mainLayout;
+
+    //  TODO: embed fab in classs
+    private enum FabProximityStatus { Hidden, Visible }
+    private      FabProximityStatus  fabProximityStatus     = FabProximityStatus.Hidden;
+    private FloatingActionButton     fabProximity           = null;
+    public  FloatingActionButton     getFabProximity()      { return fabProximity;  }
+    public  void                     updateFabVisibility()  {
+        if(fragCtrl.getMainMode() != MainMode.WEBAPP)
+        {
+            if(fabProximityStatus == FabProximityStatus.Visible)
+            {
+                if(proximityApp != null && proximityApp == activeWebApp)
+                    fabProximity.setImageResource(R.drawable.ic_cast_connected_black_24dp);
+                else fabProximity.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                fabProximity.show();
+            }
+            else if(fabProximityStatus == FabProximityStatus.Hidden)
+                fabProximity.hide();
+
+
+
+        }
+        else fabProximity.hide();
+
+    }
+
+
+    public void showBackButton() {
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+    }
+    public void hideBackButton() {
+        getSupportActionBar().setHomeButtonEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+    }
+    public void setToolbarColor(int resourcePrimaryColorID, int resourcePrimaryDarkColorID) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(getResources().getColor(resourcePrimaryDarkColorID));
+            getToolbar().setElevation(0);
+        }
+        getToolbar().setBackground(new ColorDrawable(getResources().getColor(resourcePrimaryColorID)));
+
+        // TODO: usare questa funzione per settare il colore delle icone della bottombar (problema: setta anche il colore di sfondo e lo setta in ritardo)
+        //getBottomBar().setActiveTabColor(getResources().getColor(resourcePrimaryColorID));
+    }
+
+
+    // * * * * * NOTIFICATIONS - BROADCAST RECEIVER - FULLSCREEN * * * * *
+    private final int     FULLSCREEN_NOTIFICATION_ID = 13;
+    private final String  FULLSCREEN_KEY = "com.nagash.appwebbrowser.EXIT_FULLSCREEN";
+    BroadcastReceiver broadcastReceiver;
+    private boolean fullScreen = false;
+    private NotificationManager mNotificationManager = null;
+
+
+
+
+    // * * * * * WEB APP MANAGEMENT * * * * *
+    private WebApp               proximityApp           = null;
+    private WebApp               activeWebApp           = null;
+    public void startAppFragment(WebApp webApp) {
+        //Get the reference to the ReactInstanceManager
+        fragCtrl.changeMode(MainMode.WEBAPP);
+        activeWebApp = webApp;
+        fragCtrl.getWebAppContainerFragment().startApp(webApp);
+        bottomBar.selectTabWithId(R.id.tab_webapp);
+    }
+    public boolean closeWebApp() {
+        return fragCtrl.getWebAppContainerFragment().closeApp();
+    }
+    // public WebApp                   getProximityApp()   { return proximityApp;  }
+    // public WebApp                   getActiveWebApp()   { return activeWebApp;  }
+
+
+
+
+
+
+
+    public MainMode getMode() { return fragCtrl.getMainMode(); }
+
+
+    public void showAppDetails(WebApp webApp) {
+        fragCtrl.showAppDetils(webApp);
+    }
+
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * LOCATION  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override public void onLocationChanged(Location location) {
+        Toast.makeText(this, "Location changed: " + location.getLatitude() + ", " + location.getLongitude() + "\nAccuracy: " + location.getAccuracy()
+                , Toast.LENGTH_SHORT).show();
+    }
+    @Override public void onConnected(Location myLastLocation) {
+
+    }
+    @Override public void onConnectionSuspended() {
+
+    }
+    @Override public void onConnectionFailed() {
+
+    }
+
+
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * GEOFENCE  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override public void onGeofenceIn(SortedSet<GeofenceObject<WebApp>> triggeredGeofences) {
+
+        if(triggeredGeofences.size() == 0)
+        {
+            this.proximityApp = null;
+            fabProximityStatus = FabProximityStatus.Hidden;
+        }
+        else
+        {
+            //Toast.makeText(this, "GeofenceObject Triggered!", Toast.LENGTH_SHORT).show();
+            final GeofenceObject<WebApp> nearest = triggeredGeofences.first();
+            this.proximityApp = nearest.getManagedObject();
+            fabProximityStatus = FabProximityStatus.Visible;
+
+        }
+        updateFabVisibility();
+    }
+    @Override public void onGeofenceOut(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)     {}
+    @Override public void onGeofenceEntering(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)   {}
+    @Override public void onGeofenceExiting(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)    {}
+
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * APPLIST DOWNLOADER  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override
+    public   void onAppListDownloaded(List<WebApp> webAppList) {
+
+        if(webAppList != null){
+            // initContentViewLoaded();
+            fragCtrl.getNearbyListFragment().onAppsDownloaded();
+            fragCtrl.getMapFragment().setMarkers(webAppList);
+            Collection<GeofenceObject<WebApp>> geoObjs = GeofenceObject.createGeofenceObjects(webAppList, GeoEvent.IN);
+            geofenceManager.setGeofenceObjects( geoObjs );
+            geofenceManager.startScan(5000);
+        }
+
+        else fragCtrl.getNearbyListFragment().onServerNotAvailable();
+    }
+    private  void connectToLinkServer() throws CentralConnection.DoubleConnectionException {
+        fragCtrl.getNearbyListFragment().setStatusLoading();
+        centralConnection.startAppListDownload(this);
+    }
+    public   void retryConnection() {
+        try { connectToLinkServer(); }
+        catch (CentralConnection.DoubleConnectionException e) { e.printStackTrace(); }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void initContentView() {
+        setContentView(R.layout.activity_main);
+        mainLayout = (RelativeLayout) findViewById(R.id.main_layout);
+        mainFragmentContainer = (RelativeLayout) findViewById(R.id.main_fragment_container);
+
+        bottomBar = (BottomBar) findViewById(R.id.bottomBar);
+        toolbar   = (Toolbar) findViewById(R.id.toolbar);
+        fabProximity = (FloatingActionButton) findViewById(R.id.fab_proximity);
+        fabProximity.hide();
+
+
+        fabProximityStatus = FabProximityStatus.Hidden;
+
+        fabProximity.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override public void onClick(View view) {
+                        if(proximityApp != null) {
+                            startAppFragment(proximityApp);
+                        }
+
+//                        fabProximityStatus = FabProximityStatus.Hidden;
+//                        fabProximity.hide();
+                    }
+                });
+
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setHomeButtonEnabled(true);
+
+
+        bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
+
+
+            @Override public void onTabSelected(@IdRes int tabId) {
+
+                switch(tabId) {
+                    case R.id.tab_list:
+                        fragCtrl.changeMode(MainMode.NEARBY);
+                        break;
+
+                    case R.id.tab_favourites:
+                        fragCtrl.changeMode(MainMode.FAVOURITES);
+                        break;
+
+                    case R.id.tab_map:
+                        fragCtrl.changeMode(MainMode.MAP);
+                        break;
+
+                    case R.id.tab_webapp:
+                        fragCtrl.changeMode(MainMode.WEBAPP);
+                        break;
+                }
+            }
+        });
+        bottomBar.setOnTabReselectListener(new OnTabReselectListener() {
+            @Override
+            public void onTabReSelected(@IdRes int tabId) {
+
+                View yourView = bottomBar.getTabWithId(tabId);
+                switch (tabId) {
+                    case R.id.tab_list:
+                        SimpleTooltip t = new SimpleTooltip.Builder(getBaseContext())
+                                .anchorView(yourView)
+                                .text("FIlter Radius")
+                                .gravity(Gravity.TOP)
+                                .animated(false)
+                                .transparentOverlay(true)
+                                .contentView(R.layout.tooltip_filter_slider)
+                                .build();
+                        t.show();
+
+                        break;
+
+                    case R.id.tab_map:
+
+                        break;
+
+                    case R.id.tab_webapp:
+
+                        break;
+                }
+            }
+        });
+
+        fragCtrl.changeMode(MainMode.NEARBY);
+        fragCtrl.earlyInitMapFragment();
+
+//        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+//            @Override public void onPageSelected(int position) { bottomBar.selectTabAtPosition(position); }
+//            @Override public void onPageScrollStateChanged(int state) {}
+//        });
+
+
+        // Manage fullscreen notification:
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(FULLSCREEN_KEY);
+        broadcastReceiver = new FullscreenBroadcastreceiver();
+        registerReceiver(broadcastReceiver, filter);
+    }
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * MANAGE ACTIVITY LIFECYCLE * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initContentView();
+        locationManager.setHighAccuracy();
+        locationManager.onCreate(savedInstanceState);
+        initEddy();
+        MainActivity.setMainActivity(this);
+        try{ connectToLinkServer(); }
+        catch (CentralConnection.DoubleConnectionException e) { e.printStackTrace(); }
+
+    }
+    @Override protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        locationManager.onSaveInstanceState(outState);
+    }
+    @Override protected void onStart() {
+        super.onStart();
+        locationManager.onStart();
+        eddyScanner.startScan();
+    }
+    @Override protected void onStop() {
+        super.onStop();
+        locationManager.onStop();
+        eddyScanner.stopScan();
+    }
+    @Override protected void onResume() {    // Same as onPause - need to call onHostResume on our ReactInstanceManager
+        super.onResume();
+        if (fragCtrl.getWebAppContainerFragment() != null && fragCtrl.getWebAppContainerFragment().getReactInstanceManager() != null) {
+            fragCtrl.getWebAppContainerFragment().getReactInstanceManager() .onHostResume(this, this);
+        }
+        locationManager.onResume();
+    }
+    @Override protected void onPause() {    // Any activity that uses the ReactFragment or ReactActivty Needs to call onHostPause() on the ReactInstanceManager
+        super.onPause();
+        if (fragCtrl.getWebAppContainerFragment() != null && fragCtrl.getWebAppContainerFragment().getReactInstanceManager()  != null) {
+            fragCtrl.getWebAppContainerFragment().getReactInstanceManager() .onHostPause();
+        }
+        locationManager.onPause();
+    }
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+
+    @Override public void onBackPressed() {
+        if( fragCtrl.onMainBackPressed() == false )
+            super.onBackPressed();
+    }
+    @Override public void invokeDefaultOnBackPressed() {
+        super.onBackPressed();
+    }
+
+
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        * * * * * * * * * * * * * * * MANAGE FULLSCREEN MODE * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    int statusBarHeight = 0;
+
+    int topBackup = 0;
+    int bottomBackup = 0;
+    public void setFullScreen(boolean on) {
+        if(fullScreen && on || !fullScreen && !on) return;
+        if(!fullScreen && on) { // ENTERING FULLSCREEN
+            //.setSystemUiVisibility(flags);
+//            Rect rectangle = new Rect();
+//            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+//            statusBarHeight = rectangle.top;
+
+            showFullscreenNotification();
+            getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
+            getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
+
+
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+            windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
+            int deviceWidth = displayMetrics.widthPixels;
+            int deviceHeight = displayMetrics.heightPixels;
+
+//            Rect rectangle = new Rect();
+//            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+//            statusBarHeight = rectangle.top;
+            topBackup = mainFragmentContainer.getTop();
+            bottomBackup = mainFragmentContainer.getBottom();
+            mainFragmentContainer.setTop(0);
+            mainFragmentContainer.setBottom(deviceHeight);
+            mainFragmentContainer.invalidate();
+//            getWindow().addFlags(flags);
+            fullScreen = true;
+        }
+        else if(fullScreen && !on) { // EXITING FULLSCREEN
+            hideFullscreenNotification();
+            getToolbar().animate().translationY(0+statusBarHeight).setDuration(600).start();
+            getBottomBar().animate().translationY(0).setDuration(600).start();
+            mainFragmentContainer.setTop(topBackup);
+            mainFragmentContainer.setBottom(bottomBackup);
+            mainFragmentContainer.invalidate();
+//            getWindow().clearFlags(flags);
+            fullScreen = false;
+        }
+
+
+    }
+    private void hideFullscreenNotification() {
+        if(mNotificationManager != null)
+            mNotificationManager.cancel(FULLSCREEN_NOTIFICATION_ID);
+    }
+    private void showFullscreenNotification() {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_up_down_arrows_white_24dp)
+                        .setContentTitle("WebApp in fullscreen mode")
+                        .setContentText("Tap to exit fullscreen mode")
+                        .setAutoCancel(true)
+                        .setPriority(Notification.PRIORITY_MAX);
+
+
+
+        Intent closeFullscreenIntent = new Intent(this, FullscreenBroadcastreceiver.class);
+        PendingIntent fullscreenPendingIntent = PendingIntent.getBroadcast(this, 0, closeFullscreenIntent, 0);
+
+        mBuilder.setContentIntent(fullscreenPendingIntent);
+        mBuilder.addAction(R.drawable.ic_up_down_arrows_white_24dp, "com.nagash.appwebbrowser.EXIT_FULLSCREEN", fullscreenPendingIntent);
+
+        if(mNotificationManager == null)
+            mNotificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager.notify(FULLSCREEN_NOTIFICATION_ID, mBuilder.build());
+
+    }
+
+    public static class FullscreenBroadcastreceiver extends  BroadcastReceiver {
+
+        public FullscreenBroadcastreceiver() {}
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            MainActivity mainActivity = getMainActivity();
+            // TODO: null pointer reference
+            String action = intent.getAction();
+            if (mainActivity != null) {
+                getMainActivity().setFullScreen(false);
+            }
+        }
+    };
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+        //if((boolean)intent.getExtras().get("EXIT_FULLSCREEN"))
+        setFullScreen(false);
+    }
+
+    public boolean isFullScreen() {
+        return fullScreen;
+    }
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * MANAGE ACTIVITY MEN

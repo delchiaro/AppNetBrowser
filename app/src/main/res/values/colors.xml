@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <color name="colorNearbyPrimary">#43a047</color>
+    <color name="colorNearbyPrimaryDark">#2e7d32</color>
+    <color name="colorNearbyAccent">#fdd835</color>
+
+    <color name="colorMapPrimary">#1e88e5</color>
+    <color name="colorMapPrimaryDark">#1565c0</color>
+    <color name="colorMapAccent">#009688</color>
+
+    <color name="colorFavouritesPrimary">#fff44336</color>
+    <color name="colorFavouritesPrimaryDark">#ffd32f2f</color>
+
+
+    <color name="colorMapMarker">#fff44336</color>
+    <color name="colorMapMarkerDark">#ffd32f2f</color>
+
+    <color name="colorWebAppPrimary">#7e57c2</color>
+    <color name="colorWebAppPrimaryDark">#5e35b1</color>
+    <color name="colorWebAppAccent">#9c27b0</color>
+
+
+    <color name="colorPrimary">#212121</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#616161</color>
+
+
+    <color name="tab_text">#cfd8dc</color>
+    <color name="tab_text_selected">#ffffff</color>
+
+
+
+    <color name="color_tab_1">#FF4081</color>
+    <color name="color_tab_2">#FF4081</color>
+    <color name="color_tab_3">#FF4081</color>
+</resources>

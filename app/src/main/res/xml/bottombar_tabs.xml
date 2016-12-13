@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tabs>
+    <tab
+        id="@+id/tab_list"
+        icon="@drawable/ic_list_black_24dp"
+        title="Nearby"
+        activeColor="@color/colorNearbyPrimary"
+        barColorWhenSelected="#111111"
+        />
+
+    <tab
+        id="@+id/tab_favourites"
+        icon="@drawable/ic_favorite_black_24dp"
+        title="Favourites"
+        activeColor="@color/colorFavouritesPrimary"
+        barColorWhenSelected="#111111"
+        />
+
+
+    <tab
+        id="@+id/tab_map"
+        icon="@drawable/ic_map_black_24dp"
+        title="Map"
+        activeColor="@color/colorMapPrimary"
+        barColorWhenSelected="#111111"
+        />
+
+
+    <tab
+        id="@+id/tab_webapp"
+        icon="@drawable/ic_cast_black_24dp"
+        title="WebApp"
+        activeColor="@color/colorWebAppPrimary"
+        barColorWhenSelected="#111111"
+        />
+
+</tabs>
+
+
+

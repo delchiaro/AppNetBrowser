@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.nagash.appwebbrowser.TabbedActivity">
+
+    <item
+        android:id="@+id/menu_item_marker_info"
+        android:orderInCategory="100"
+        android:title="@string/menu_marker_info"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_info_black_24dp"
+        />
+
+    <item
+        android:id="@+id/menu_item_marker_play"
+        android:orderInCategory="100"
+        android:title="@string/menu_marker_play"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_play_arrow_black_24dp"
+        />
+
+</menu>

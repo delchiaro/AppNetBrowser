@@ -1,0 +1,387 @@
+package com.nagash.appwebbrowser.controller;
+
+import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
+
+import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
+import com.nagash.appwebbrowser.R;
+import com.nagash.appwebbrowser.model.connection.AppListDownloadHandler;
+import com.nagash.appwebbrowser.model.connection.CentralConnection;
+import com.nagash.appwebbrowser.model.localization.LocationManager;
+import com.nagash.appwebbrowser.model.localization.LocationEventListener;
+import com.nagash.appwebbrowser.model.geofencing.options.EmptyListAdvertiseOptions;
+import com.nagash.appwebbrowser.model.geofencing.GeoEvent;
+import com.nagash.appwebbrowser.model.geofencing.GeofenceListener;
+import com.nagash.appwebbrowser.model.geofencing.GeofenceManager;
+import com.nagash.appwebbrowser.model.geofencing.GeofenceObject;
+import com.nagash.appwebbrowser.model.webapp.WebApp;
+import com.roughike.bottombar.BottomBar;
+import com.roughike.bottombar.OnTabReselectListener;
+import com.roughike.bottombar.OnTabSelectListener;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.SortedSet;
+
+import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
+
+/**
+ * Created by nagash on 14/09/16.
+ */
+public class MainActivity
+        extends AppCompatActivity
+
+        implements
+        DefaultHardwareBackBtnHandler,
+        AppListDownloadHandler,
+        LocationEventListener,
+        GeofenceListener<WebApp>
+{
+
+    // * * * * * Managers * * * * *
+
+    FragmentsController fragCtrl = new FragmentsController(this);
+    CentralConnection centralConnection = CentralConnection.instance();
+    LocationManager locationManager = new LocationManager(this, this);
+    GeofenceManager<WebApp> geofenceManager = new GeofenceManager(locationManager, this, AdvertiseOptions.ADVERTISE_ON_EMPTY_LIST);
+
+
+
+
+
+
+    // * * * * * UI COMPONENTS * * * * *
+    private BottomBar  bottomBar  = null;
+    private Toolbar    toolbar    = null;
+
+    public BottomBar   getBottomBar()      { return bottomBar;     }
+    public Toolbar     getToolbar()        { return toolbar;       }
+
+    //  TODO: embed fab in classs
+    private enum FabProximityStatus { Hidden, Visible }
+    private      FabProximityStatus  fabProximityStatus     = FabProximityStatus.Hidden;
+    private FloatingActionButton     fabProximity           = null;
+    public  FloatingActionButton     getFabProximity()      { return fabProximity;  }
+    public  void                     updateFabVisibility()  {
+        if(fragCtrl.getMainMode() != MainMode.WEBAPP)
+        {
+            if(fabProximityStatus == FabProximityStatus.Visible)
+            {
+                if(proximityApp != null && proximityApp == activeWebApp)
+                    fabProximity.setImageResource(R.drawable.ic_cast_connected_black_24dp);
+                else fabProximity.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                fabProximity.show();
+            }
+            else if(fabProximityStatus == FabProximityStatus.Hidden)
+                fabProximity.hide();
+
+
+
+        }
+        else fabProximity.hide();
+
+    }
+
+
+    public void showBackButton() {
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+    }
+    public void hideBackButton() {
+        getSupportActionBar().setHomeButtonEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+    }
+    public void setToolbarColor(int resourcePrimaryColorID, int resourcePrimaryDarkColorID) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(getResources().getColor(resourcePrimaryDarkColorID));
+            getToolbar().setElevation(0);
+        }
+        getToolbar().setBackground(new ColorDrawable(getResources().getColor(resourcePrimaryColorID)));
+
+        // TODO: usare questa funzione per settare il colore delle icone della bottombar (problema: setta anche il colore di sfondo e lo setta in ritardo)
+        //getBottomBar().setActiveTabColor(getResources().getColor(resourcePrimaryColorID));
+    }
+
+
+
+
+
+
+    // * * * * * WEB APP MANAGEMENT * * * * *
+    private WebApp               proximityApp           = null;
+    private WebApp               activeWebApp           = null;
+    public void startAppFragment(WebApp webApp) {
+        //Get the reference to the ReactInstanceManager
+        fragCtrl.changeMode(MainMode.WEBAPP);
+        activeWebApp = webApp;
+        fragCtrl.getWebAppContainerFragment().startApp(webApp);
+        bottomBar.selectTabAtPosition(2);
+    }
+    // public WebApp                   getProximityApp()   { return proximityApp;  }
+    // public WebApp                   getActiveWebApp()   { return activeWebApp;  }
+
+
+
+
+
+
+
+    public MainMode getMode() { return fragCtrl.getMainMode(); }
+
+
+    public void showAppDetails(WebApp webApp) {
+        fragCtrl.showAppDetils(webApp);
+    }
+
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * LOCATION  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override public void onLocationChanged(Location location) {
+        Toast.makeText(this, "Location changed: " + location.getLatitude() + ", " + location.getLongitude() + "\nAccuracy: " + location.getAccuracy()
+                , Toast.LENGTH_SHORT).show();
+    }
+    @Override public void onConnected(Location myLastLocation) {
+
+    }
+    @Override public void onConnectionSuspended() {
+
+    }
+    @Override public void onConnectionFailed() {
+
+    }
+
+
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * GEOFENCE  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override public void onGeofenceIn(SortedSet<GeofenceObject<WebApp>> triggeredGeofences) {
+
+        if(triggeredGeofences.size() == 0)
+        {
+            this.proximityApp = null;
+            fabProximityStatus = FabProximityStatus.Hidden;
+        }
+        else
+        {
+            //Toast.makeText(this, "GeofenceObject Triggered!", Toast.LENGTH_SHORT).show();
+            final GeofenceObject<WebApp> nearest = triggeredGeofences.first();
+            this.proximityApp = nearest.getManagedObject();
+            fabProximityStatus = FabProximityStatus.Visible;
+
+        }
+        updateFabVisibility();
+    }
+    @Override public void onGeofenceOut(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)     {}
+    @Override public void onGeofenceEntering(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)   {}
+    @Override public void onGeofenceExiting(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)    {}
+
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * APPLIST DOWNLOADER  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override
+    public   void onAppListDownloaded(List<WebApp> webAppList) {
+
+        if(webAppList != null){
+            // initContentViewLoaded();
+            fragCtrl.getAppListFragment().onAppsDownloaded();
+            fragCtrl.getMapFragment().setMarkers(webAppList);
+            Collection<GeofenceObject<WebApp>> geoObjs = GeofenceObject.createGeofenceObjects(webAppList, GeoEvent.IN);
+            geofenceManager.setGeofenceObjects( geoObjs );
+            geofenceManager.startScan(5000);
+        }
+
+        else fragCtrl.getAppListFragment().onServerNotAvailable();
+    }
+    private  void connectToLinkServer() throws CentralConnection.DoubleConnectionException {
+        fragCtrl.getAppListFragment().getNearbyListFragment().setStatusLoading();
+        centralConnection.startAppListDownload(this);
+    }
+    public   void retryConnection() {
+        try { connectToLinkServer(); }
+        catch (CentralConnection.DoubleConnectionException e) { e.printStackTrace(); }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void initContentView() {
+        setContentView(R.layout.activity_main);
+
+        bottomBar = (BottomBar) findViewById(R.id.bottomBar);
+        toolbar   = (Toolbar) findViewById(R.id.toolbar);
+        fabProximity = (FloatingActionButton) findViewById(R.id.fab_proximity);
+        fabProximity.hide();
+
+
+        fabProximityStatus = FabProximityStatus.Hidden;
+
+        fabProximity.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override public void onClick(View view) {
+                        if(proximityApp != null) {
+                            startAppFragment(proximityApp);
+                        }
+
+//                        fabProximityStatus = FabProximityStatus.Hidden;
+//                        fabProximity.hide();
+                    }
+                });
+
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setHomeButtonEnabled(true);
+
+
+        bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
+
+
+            @Override public void onTabSelected(@IdRes int tabId) {
+
+                switch(tabId) {
+                    case R.id.tab_list:
+                        fragCtrl.changeMode(MainMode.LIST);
+                        break;
+
+                    case R.id.tab_map:
+                        fragCtrl.changeMode(MainMode.MAP);
+                        break;
+
+                    case R.id.tab_webapp:
+                        fragCtrl.changeMode(MainMode.WEBAPP);
+                        break;
+                }
+            }
+        });
+        bottomBar.setOnTabReselectListener(new OnTabReselectListener() {
+            @Override
+            public void onTabReSelected(@IdRes int tabId) {
+
+                View yourView = bottomBar.getTabWithId(tabId);
+                switch (tabId) {
+                    case R.id.tab_list:
+                        SimpleTooltip t = new SimpleTooltip.Builder(getBaseContext())
+                                .anchorView(yourView)
+                                .text("FIlter Radius")
+                                .gravity(Gravity.TOP)
+                                .animated(false)
+                                .transparentOverlay(true)
+                                .contentView(R.layout.tooltip_filter_slider)
+                                .build();
+                        t.show();
+
+                        break;
+
+                    case R.id.tab_map:
+
+                        break;
+
+                    case R.id.tab_webapp:
+
+                        break;
+                }
+            }
+        });
+
+        fragCtrl.changeMode(MainMode.LIST);
+        fragCtrl.earlyInitMapFragment();
+
+//        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+//            @Override public void onPageSelected(int position) { bottomBar.selectTabAtPosition(position); }
+//            @Override public void onPageScrollStateChanged(int state) {}
+//        });
+    }
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * MANAGE ACTIVITY LIFECYCLE * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    @Override protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initContentView();
+        locationManager.setHighAccuracy();
+        locationManager.onCreate(savedInstanceState);
+        try{ connectToLinkServer(); }
+        catch (CentralConnection.DoubleConnectionException e) { e.printStackTrace(); }
+
+    }
+    @Override protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        locationManager.onSaveInstanceState(outState);
+    }
+    @Override protected void onStart() {
+        super.onStart();
+        locationManager.onStart();
+    }
+    @Override protected void onStop() {
+        super.onStop();
+        locationManager.onStop();
+    }
+    @Override protected void onResume() {    // Same as onPause - need to call onHostResume on our ReactInstanceManager
+        super.onResume();
+        if (fragCtrl.getWebAppContainerFragment() != null && fragCtrl.getWebAppContainerFragment().getReactInstanceManager() != null) {
+            fragCtrl.getWebAppContainerFragment().getReactInstanceManager() .onHostResume(this, this);
+        }
+        locationManager.onResume();
+    }
+    @Override protected void onPause() {    // Any activity that uses the ReactFragment or ReactActivty Needs to call onHostPause() on the ReactInstanceManager
+        super.onPause();
+        if (fragCtrl.getWebAppContainerFragment() != null && fragCtrl.getWebAppContainerFragment().getReactInstanceManager()  != null) {
+            fragCtrl.getWebAppContainerFragment().getReactInstanceManager() .onHostPause();
+        }
+        locationManager.onPause();
+    }
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+
+    @Override public void onBackPressed() {
+        if( fragCtrl.onMainBackPressed() == false )
+            super.onBackPressed();
+    }
+    @Override public void invokeDefaultOnBackPressed() {
+        super.onBackPressed();
+    }
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * MANAGE ACTIVITY MEN

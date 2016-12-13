@@ -1,0 +1,21 @@
+<tabs>
+
+    <tab
+        id="@+id/tab_nearby"
+        icon="@drawable/ic_list_black_24dp"
+        title="Nearby"
+        barColorWhenSelected="#8bc34a"/>
+    <tab
+        id="@+id/tab_map"
+        icon="@drawable/ic_map_black_24dp"
+        title="Map"
+        barColorWhenSelected="#00bcd4"/>
+
+    <tab
+        id="@+id/tab_webapp"
+        icon="@drawable/ic_cast_connected_black_24dp"
+        title="WebApp"
+        barColorWhenSelected="#ff9800"/>
+
+
+</tabs>

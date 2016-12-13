@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="48dp"
+    >
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/app_button"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
+        app:elevation="-2dp"
+        app:fabSize="mini"
+        app:backgroundTint="#c5e1a5"
+        app:borderWidth="2dp"
+        app:rippleColor="#33691e"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
+    <!-- Must set focusable="false" to make both the list item and the button selectable.
+         Problem: ImageButton set focusable="true" in constructor, so we have to set to false
+                  from java! (FAB is an ImageButton) -->
+
+
+
+    <TextView
+        android:id="@+id/app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="21dip"
+        android:text="App Name"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/app_button"
+        android:layout_toEndOf="@+id/app_button"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
+
+</RelativeLayout>
