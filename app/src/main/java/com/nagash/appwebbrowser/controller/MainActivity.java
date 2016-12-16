@@ -121,8 +121,6 @@ public class MainActivity
             else if(fabProximityStatus == FabProximityStatus.Hidden)
                 fabProximity.hide();
 
-
-
         }
         else fabProximity.hide();
 

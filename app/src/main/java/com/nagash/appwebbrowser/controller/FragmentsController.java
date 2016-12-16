@@ -1,5 +1,7 @@
 package com.nagash.appwebbrowser.controller;
 
+import android.content.Intent;
+
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.fragments.details.WebAppDetailsFragment;
 import com.nagash.appwebbrowser.controller.fragments.listFavourites.FavouriteListFragment2;
@@ -85,33 +87,36 @@ public class FragmentsController
 
 
     public void showAppDetils(WebApp webApp) {
-        if(mainMode != MainMode.WEBAPP ) {
-            WebAppDetailsFragment detailsFragment;
+//        if(mainMode != MainMode.WEBAPP ) {
+//            WebAppDetailsFragment detailsFragment;
+//
+//            if (mainMode == MainMode.NEARBY)
+//            {
+//                if (webAppDetailsFragment_nearby == null)
+//                    webAppDetailsFragment_nearby = (new WebAppDetailsFragment()).setParentFragmentStyle(nearbyListFragment);
+//                detailsFragment = webAppDetailsFragment_nearby;
+//            }
+//            else if( mainMode == MainMode.FAVOURITES)
+//            {
+//                if (webAppDetailsFragment_favourites == null)
+//                    webAppDetailsFragment_favourites = (new WebAppDetailsFragment()).setParentFragmentStyle(favouriteListFragment);
+//                detailsFragment = webAppDetailsFragment_favourites;
+//            }
+//            else if (mainMode == MainMode.MAP)
+//            {
+//                if (webAppDetailsFragment_map == null)
+//                    webAppDetailsFragment_map = (new WebAppDetailsFragment()).setParentFragmentStyle(mapFragment);
+//                detailsFragment = webAppDetailsFragment_map;
+//            }
+//            else return;
+//
+//            detailsFragment.setWebApp(webApp);
+//            fragmentHelper.activateFragment(detailsFragment);
+//        }
 
-            if (mainMode == MainMode.NEARBY)
-            {
-                if (webAppDetailsFragment_nearby == null)
-                    webAppDetailsFragment_nearby = (new WebAppDetailsFragment()).setParentFragmentStyle(nearbyListFragment);
-                detailsFragment = webAppDetailsFragment_nearby;
-            }
-            else if( mainMode == MainMode.FAVOURITES)
-            {
-                if (webAppDetailsFragment_favourites == null)
-                    webAppDetailsFragment_favourites = (new WebAppDetailsFragment()).setParentFragmentStyle(favouriteListFragment);
-                detailsFragment = webAppDetailsFragment_favourites;
-            }
-            else if (mainMode == MainMode.MAP)
-            {
-                if (webAppDetailsFragment_map == null)
-                    webAppDetailsFragment_map = (new WebAppDetailsFragment()).setParentFragmentStyle(mapFragment);
-                detailsFragment = webAppDetailsFragment_map;
-            }
-            else return;
-
-            detailsFragment.setWebApp(webApp);
-            fragmentHelper.activateFragment(detailsFragment);
-        }
-
+        Intent intent = new Intent(main, AppDetailsActivity.class);
+        intent.putExtra("WebApp", webApp);
+        main.startActivity(intent);
     }
     public boolean closeAppDetails() {
         // try to close AppDetails (if open). Return true if appDetails was open.

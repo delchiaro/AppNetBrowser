@@ -1,8 +1,11 @@
 package com.nagash.appwebbrowser.model.webapp;
 
 import android.location.Location;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import com.nagash.appwebbrowser.model.beacon.EddystoneBeacon;
 import com.nagash.appwebbrowser.model.geofencing.Geofenceable;
 
 import protobuf.app.App;
@@ -10,21 +13,43 @@ import protobuf.app.App;
 /**
  * Created by nagash on 22/09/16.
  */
-public class WebApp implements Geofenceable {
+public class WebApp implements Geofenceable, Parcelable {
 
-    private final int defaultGeofenceRadius = 30;
-    private final App.WebApp protoWebApp;
+    private static final int DEFAULT_PROXIMITY_RADIUS = 30;
 
-    private final App.EddystoneBeacon eddystoneBeacon;
+    private final EddystoneBeacon eddystoneBeacon;
 
+    private final String appId;
+    private final String appName;
+    private final String indexFile;
+    private final String versionName;
+    private final int    versionCode;
+    private final int    proximityRadius;
+    // TODO: insert proximityRadius in protobuf
 
-    Location location;
+    private final String mainClass;
+
+    private final Location location;
 
 
     public WebApp(@NonNull App.WebApp protoWebApp)
     {
-        this.protoWebApp = protoWebApp;
-        this.eddystoneBeacon = protoWebApp.getBeacon();
+        this.appId = protoWebApp.getAppId();
+        this.appName = protoWebApp.getAppName();
+        this.versionName = protoWebApp.getVersionName();
+        this.versionCode = protoWebApp.getVersionCode();
+        this.proximityRadius = DEFAULT_PROXIMITY_RADIUS;
+
+        if(protoWebApp.getIndexFileAndroid() != null && protoWebApp.getIndexFileAndroid().equals("") == false)
+            this.indexFile = protoWebApp.getIndexFileAndroid();
+        else this.indexFile = protoWebApp.getIndexFile();
+
+        if(protoWebApp.getMainAndroidClass() != null && protoWebApp.getMainAndroidClass().equals("") == false)
+            this.mainClass = protoWebApp.getMainAndroidClass();
+        else this.mainClass = protoWebApp.getMainClass();
+
+
+        this.eddystoneBeacon = new EddystoneBeacon(protoWebApp.getBeacon() );
 
         if(protoWebApp.getLat().equals("") == false && protoWebApp.getLong().equals("") == false)
         {
@@ -32,39 +57,44 @@ public class WebApp implements Geofenceable {
             location.setLatitude(Double.parseDouble(protoWebApp.getLat()));
             location.setLongitude(Double.parseDouble(protoWebApp.getLong()));
         }
+        else location = null;
     }
 
 
+
+    public final EddystoneBeacon getEddystone() {
+        return eddystoneBeacon;
+    }
     public final String getUID_instance() {
-        return eddystoneBeacon.getUIDInstance();
+        return eddystoneBeacon.getUidInstance();
     }
     public final String getUID_namespace() {
-        return eddystoneBeacon.getUIDNamespace();
+        return eddystoneBeacon.getUidNamsepace();
     }
     public final String getUID() {
-        return getUID_namespace() + getUID_instance();
+        return eddystoneBeacon.getUID();
     }
     public final String getURL() {
         return eddystoneBeacon.getURL();
     }
+    public final String getTLM() {
+        return eddystoneBeacon.getTLM();
+    }
 
 
     public final String getId() {
-        return protoWebApp.getAppId();
+        return appId;
     }
     public final String getName() {
-        return protoWebApp.getAppName();
+        return appName;
     }
     public final int getVersionCode() {
-        return protoWebApp.getVersionCode();
+        return versionCode;
     }
     public final String getVersionName() {
-        return protoWebApp.getVersionName();
+        return versionName;
     }
 
-    public final int    getGeofenceRadius() {
-        return defaultGeofenceRadius;
-    }
 
     public Double getLatitude() {
         if(location != null) return location.getLatitude();
@@ -80,27 +110,72 @@ public class WebApp implements Geofenceable {
         return location;
     }
     public int getProximityRadius() {
-        return defaultGeofenceRadius;
+        return proximityRadius;
     }
+
+
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         WebApp webApp = (WebApp) o;
-
-        return protoWebApp.getAppId().equals(webApp.protoWebApp.getAppId());
+        return appId.equals(webApp.appId);
 
     }
 
     @Override
     public int hashCode() {
-        return protoWebApp.getAppId().hashCode();
+        return appId.hashCode();
     }
 
 
-    //    @Override
+
+
+
+
+
+
+
+
+
+
+    // * * * * * * * * PARCELABLE INTERFACE * * * * * * * *
+    @Override public int describeContents() {
+        return hashCode();
+    }
+    @Override public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeParcelable(eddystoneBeacon, i);
+        parcel.writeString(appId);
+        parcel.writeString(appName);
+        parcel.writeString(indexFile);
+        parcel.writeString(versionName);
+        parcel.writeInt(versionCode);
+        parcel.writeInt(proximityRadius);
+        parcel.writeString(mainClass);
+        parcel.writeParcelable(location, i);
+    }
+    protected WebApp(Parcel in) {
+        eddystoneBeacon = in.readParcelable(EddystoneBeacon.class.getClassLoader());
+        appId = in.readString();
+        appName = in.readString();
+        indexFile = in.readString();
+        versionName = in.readString();
+        versionCode = in.readInt();
+        proximityRadius = in.readInt();
+        mainClass = in.readString();
+        location = in.readParcelable(Location.class.getClassLoader());
+    }
+
+    public static final Creator<WebApp> CREATOR = new Creator<WebApp>() {
+        @Override public WebApp createFromParcel(Parcel in) { return new WebApp(in); }
+        @Override public WebApp[] newArray(int size) { return new WebApp[size]; }
+    };
+
+
+
+
+//        @Override
 //    public boolean equals(Object o) {
 //        if (this == o) return true;
 //        if (o == null || getClass() != o.getClass()) return false;

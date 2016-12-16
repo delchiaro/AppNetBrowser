@@ -96,10 +96,15 @@ public class WebAppDetailsFragment extends MainFragment {
         super.onFragmentShown();
         getMainActivity().showBackButton();
         loadFavorite();
+        getMainActivity().getBottomBar().setVisibility(View.INVISIBLE);
+
     }
     @Override public void onFragmentHidden() {
         super.onFragmentHidden();
         getMainActivity().hideBackButton();
+        getMainActivity().getBottomBar().setVisibility(View.VISIBLE);
+
+
     }
 
 
