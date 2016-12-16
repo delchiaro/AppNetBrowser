@@ -11,8 +11,8 @@ import android.support.v4.app.Fragment;
 
 public class MainFragment extends Fragment {
 
-
-    public static MainFragmentBuilder builder() { return new MainFragmentBuilder(); }
+//
+//    public static MainFragmentBuilder builder() { return new MainFragmentBuilder(); }
 
     public enum BackButton { VISIBLE, HIDDEN }
 
@@ -33,18 +33,17 @@ public class MainFragment extends Fragment {
     }
 
 
-    protected MainFragment(){}
-    public MainFragment(MainFragment styleCopy){
-        this.title = styleCopy.title;
-        this.titleID = styleCopy.titleID;
-        this.colorID = styleCopy.colorID;
-        this.colorDarkID = styleCopy.colorDarkID;
-        this.backButton = styleCopy.backButton;
-        this.setHasOptionsMenu(styleCopy.hasOptionsMenu());
+   public MainFragment(){}
+
+    public void copyFragmentParams(MainFragment copy) {
+        this.title = copy.title;
+        this.titleID = copy.titleID;
+        this.colorID = copy.colorID;
+        this.colorDarkID = copy.colorDarkID;
+        this.backButton = copy.backButton;
+        this.setHasOptionsMenu(copy.hasOptionsMenu());
     }
-    public MainFragment(MainFragmentBuilder builder){
-        this(builder.build());
-    }
+
 
 
     private final void actionbarToUpdate() {

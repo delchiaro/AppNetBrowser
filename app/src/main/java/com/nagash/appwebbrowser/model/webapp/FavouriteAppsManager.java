@@ -12,14 +12,21 @@ import java.util.Set;
  * Created by nagash on 07/10/16.
  */
 
-public class FavoriteAppsManager
+public class FavouriteAppsManager
 {
+    private static FavouriteAppsManager instance = null;
+
+    public static FavouriteAppsManager getInstance(Activity activity) {
+        if(instance == null)
+            return instance = new FavouriteAppsManager(activity);
+        else return instance;
+    }
 
     private final static String SHARED_PREF_KEY = "FAVORITES_APP_LIST";
     Set<String> favoriteAppIDs;
     SharedPreferences sharedPref;
 
-    public FavoriteAppsManager(Activity activity) {
+    private FavouriteAppsManager(Activity activity) {
        this.sharedPref =  activity.getPreferences(activity.MODE_PRIVATE);
         favoriteAppIDs = new HashSet<>();
     }

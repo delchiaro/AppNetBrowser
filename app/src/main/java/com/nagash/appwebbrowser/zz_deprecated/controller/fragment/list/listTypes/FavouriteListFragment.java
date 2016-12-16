@@ -14,7 +14,7 @@
 //import com.nagash.appwebbrowser.controller.fragments.WebAppListAdapter;
 //import com.nagash.appwebbrowser.controller.fragments.list.AppListFragment;
 //import com.nagash.appwebbrowser.model.connection.CentralConnection;
-//import com.nagash.appwebbrowser.model.webapp.FavoriteAppsManager;
+//import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 //import com.nagash.appwebbrowser.model.webapp.WebApp;
 //
 //import java.util.ArrayList;
@@ -65,7 +65,7 @@
 //        final List<WebApp> appList = CentralConnection.instance().getCachedWebAppList();
 //        if(appList != null && appList.isEmpty() == false && isAdded() )
 //        {
-//            FavoriteAppsManager favoriteAppsManager = new FavoriteAppsManager(getActivity());
+//            FavouriteAppsManager favoriteAppsManager = new FavouriteAppsManager(getActivity());
 //            final List<WebApp> favorites = new ArrayList<>(favoriteAppsManager.filterFavoritesApps(appList));
 //
 //            // Create the adapter to convert the array to views

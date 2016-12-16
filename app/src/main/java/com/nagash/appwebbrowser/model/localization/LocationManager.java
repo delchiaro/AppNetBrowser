@@ -1,11 +1,14 @@
 package com.nagash.appwebbrowser.model.localization;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -67,7 +70,6 @@ public class LocationManager implements
     }
 
 
-
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // * * * * MANAGE ACTIVITY LIFECYCLE * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -81,13 +83,16 @@ public class LocationManager implements
         if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates)
             startLocationUpdates();
     }
+
     public void onPause() {
         if (mGoogleApiClient.isConnected())
             stopLocationUpdates();
     }
+
     public void onStart() {
         connect();
     }
+
     public void onStop() {
         disconnect();
     }
@@ -101,35 +106,36 @@ public class LocationManager implements
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
-
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // * * * * PUBLIC METHODS  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     public void setLocationRequest(@NonNull LocationRequest mLocationRequest) {
         this.mLocationRequest = mLocationRequest;
     }
+
     public void setHighAccuracy() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10000);
         mLocationRequest.setFastestInterval(5000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
+
     public void setLowPower() {
         this.mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(15000);
         mLocationRequest.setFastestInterval(7000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
     }
+
     public Location getCurrentLocation() {
         return mCurrentLocation;
     }
+
     public GoogleApiClient getGoogleApiClient() {
         return mGoogleApiClient;
     }
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-
 
 
     protected void updateValuesFromBundle(@Nullable Bundle savedInstanceState) {
@@ -167,33 +173,31 @@ public class LocationManager implements
     }
 
 
-
-
-
-
     protected void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(contextActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(contextActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
+
     protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
+
     protected void connect() {
         mGoogleApiClient.connect();
     }
+
     protected void disconnect() {
         if (mGoogleApiClient.isConnected()) mGoogleApiClient.disconnect();
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
     protected void checkLocationSettings() {
@@ -204,10 +208,11 @@ public class LocationManager implements
 
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             private static final int REQUEST_CHECK_SETTINGS = 12374819;
+
             @Override
             public void onResult(LocationSettingsResult result) {
                 final Status status = result.getStatus();
-                final LocationSettingsStates state= result.getLocationSettingsStates();
+                final LocationSettingsStates state = result.getLocationSettingsStates();
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
                         // All location settings are satisfied. The client can
@@ -235,16 +240,34 @@ public class LocationManager implements
     }
 
 
+    public void onLocationPermissionsReceived() {
+        if (mRequestingLocationUpdates) {
+            startLocationUpdates();
+        }
 
+        for(LocationEventListener lst : listeners)
+            lst.onConnected(mCurrentLocation);
+    }
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // * * * * EVENT LISTENERS * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     @Override
-    public void onConnected(Bundle bundle)
-    {
+    public void onConnected(Bundle bundle) {
         if (mCurrentLocation == null)
-            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (ActivityCompat.checkSelfPermission(contextActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(contextActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                ActivityCompat.requestPermissions(contextActivity,new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                ActivityCompat.requestPermissions(contextActivity,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         if (mRequestingLocationUpdates) {
             startLocationUpdates();

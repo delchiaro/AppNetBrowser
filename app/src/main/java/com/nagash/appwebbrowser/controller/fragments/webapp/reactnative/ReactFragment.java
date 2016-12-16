@@ -50,14 +50,16 @@ public class ReactFragment
     public static ReactFragment newInstance(final WebAppContainerFragment containerFragment, WebApp application)
     {
         ReactFragment frag = new ReactFragment();
-        frag.jsBundleAppID = application.getId();
-        frag.containerFragment = containerFragment;
+        frag.init(containerFragment, application);
         return frag;
     }
 
-    private ReactFragment() {}
-
-
+    public ReactFragment() {}
+    public ReactFragment init(final WebAppContainerFragment containerFragment, WebApp application) {
+        jsBundleAppID = application.getId();
+        this.containerFragment = containerFragment;
+        return this;
+    }
     ReactInstanceManager.ReactInstanceEventListener eventListener = null;
     private boolean eventListenerLinked = false;
 

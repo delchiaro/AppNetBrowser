@@ -1,5 +1,6 @@
 package com.nagash.appwebbrowser.controller;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -7,10 +8,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
@@ -29,6 +32,8 @@ import android.widget.Toast;
 import com.estimote.sdk.eddystone.Eddystone;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.nagash.appwebbrowser.R;
+import com.nagash.appwebbrowser.controller.webAppController.WebAppController;
+import com.nagash.appwebbrowser.controller.webAppController.WebAppListener;
 import com.nagash.appwebbrowser.model.beacon.eddystoneProximity.EddystoneProximityListener;
 import com.nagash.appwebbrowser.model.beacon.eddystoneProximity.EddystoneProximityManager;
 import com.nagash.appwebbrowser.model.beacon.eddystoneScanner.EddystoneScanner;
@@ -38,16 +43,14 @@ import com.nagash.appwebbrowser.model.connection.CentralConnection;
 import com.nagash.appwebbrowser.model.localization.LocationManager;
 import com.nagash.appwebbrowser.model.localization.LocationEventListener;
 import com.nagash.appwebbrowser.model.geofencing.options.EmptyListAdvertiseOptions;
-import com.nagash.appwebbrowser.model.geofencing.GeoEvent;
 import com.nagash.appwebbrowser.model.geofencing.GeofenceListener;
 import com.nagash.appwebbrowser.model.geofencing.GeofenceManager;
-import com.nagash.appwebbrowser.model.geofencing.GeofenceObject;
+import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabReselectListener;
 import com.roughike.bottombar.OnTabSelectListener;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -64,9 +67,9 @@ public class MainActivity
         DefaultHardwareBackBtnHandler,
         AppListDownloadHandler,
         LocationEventListener,
-        GeofenceListener<WebApp>,
         EddystoneProximityListener,
-        EddystoneScannerListener
+        EddystoneScannerListener,
+        WebAppListener
 {
 
     private static MainActivity mainActivity = null;
@@ -81,7 +84,7 @@ public class MainActivity
     FragmentsController fragCtrl = new FragmentsController(this);
     CentralConnection centralConnection = CentralConnection.instance();
     LocationManager locationManager = new LocationManager(this, this);
-    GeofenceManager<WebApp> geofenceManager = new GeofenceManager(locationManager, this, EmptyListAdvertiseOptions.ADVERTISE_ON_EMPTY_LIST);
+    //GeofenceManager<WebApp> geofenceManager = new GeofenceManager(locationManager, this, EmptyListAdvertiseOptions.ADVERTISE_ON_EMPTY_LIST);
 
 
 
@@ -97,6 +100,8 @@ public class MainActivity
 
     private RelativeLayout mainFragmentContainer;
     private RelativeLayout mainLayout;
+
+
 
     //  TODO: embed fab in classs
     private enum FabProximityStatus { Hidden, Visible }
@@ -156,26 +161,6 @@ public class MainActivity
 
 
 
-    // * * * * * WEB APP MANAGEMENT * * * * *
-    private WebApp               proximityApp           = null;
-    private WebApp               activeWebApp           = null;
-    public void startAppFragment(WebApp webApp) {
-        //Get the reference to the ReactInstanceManager
-        fragCtrl.changeMode(MainMode.WEBAPP);
-        activeWebApp = webApp;
-        fragCtrl.getWebAppContainerFragment().startApp(webApp);
-        bottomBar.selectTabWithId(R.id.tab_webapp);
-    }
-    public void closeWebApp() {
-        fragCtrl.getWebAppContainerFragment().closeApp();
-    }
-    // public WebApp                   getProximityApp()   { return proximityApp;  }
-    // public WebApp                   getActiveWebApp()   { return activeWebApp;  }
-
-
-
-
-
 
 
     public MainMode getMode() { return fragCtrl.getMainMode(); }
@@ -208,35 +193,51 @@ public class MainActivity
     }
 
 
-
-
-
-
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * * * * * * * * * * * * * * * GEOFENCE  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-    @Override public void onGeofenceIn(SortedSet<GeofenceObject<WebApp>> triggeredGeofences) {
-
-        if(triggeredGeofences.size() == 0)
-        {
-            this.proximityApp = null;
-            fabProximityStatus = FabProximityStatus.Hidden;
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0  && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    locationManager.onLocationPermissionsReceived();
+                }
+                else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request
         }
-        else
-        {
-            //Toast.makeText(this, "GeofenceObject Triggered!", Toast.LENGTH_SHORT).show();
-            final GeofenceObject<WebApp> nearest = triggeredGeofences.first();
-            this.proximityApp = nearest.getManagedObject();
-            fabProximityStatus = FabProximityStatus.Visible;
-
-        }
-        updateFabVisibility();
     }
-    @Override public void onGeofenceOut(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)     {}
-    @Override public void onGeofenceEntering(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)   {}
-    @Override public void onGeofenceExiting(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)    {}
 
+
+
+
+//    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+//     * * * * * * * * * * * * * * * GEOFENCE  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+//     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+//    @Override public void onGeofenceIn(SortedSet<GeofenceObject<WebApp>> triggeredGeofences) {
+//
+//        if(triggeredGeofences.size() == 0)
+//        {
+//            this.proximityApp = null;
+//            fabProximityStatus = FabProximityStatus.Hidden;
+//        }
+//        else
+//        {
+//            //Toast.makeText(this, "GeofenceObject Triggered!", Toast.LENGTH_SHORT).show();
+//            final GeofenceObject<WebApp> nearest = triggeredGeofences.first();
+//            this.proximityApp = nearest.getManagedObject();
+//            fabProximityStatus = FabProximityStatus.Visible;
+//
+//        }
+//        updateFabVisibility();
+//    }
+//    @Override public void onGeofenceOut(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)     {}
+//    @Override public void onGeofenceEntering(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)   {}
+//    @Override public void onGeofenceExiting(SortedSet<GeofenceObject<WebApp>> triggeredGeofences)    {}
+//
 
 
 
@@ -252,9 +253,10 @@ public class MainActivity
             // initContentViewLoaded();
             fragCtrl.getNearbyListFragment().onAppsDownloaded();
             fragCtrl.getMapFragment().setMarkers(webAppList);
-            Collection<GeofenceObject<WebApp>> geoObjs = GeofenceObject.createGeofenceObjects(webAppList, new GeoEvent().enableInEvent());
-            geofenceManager.setGeofenceObjects( geoObjs );
-            geofenceManager.startScan(5000);
+            startWebAppController(webAppList);
+//            Collection<GeofenceObject<WebApp>> geoObjs = GeofenceObject.createGeofenceObjects(webAppList, new GeoEvent().enableInEvent());
+//            geofenceManager.setGeofenceObjects( geoObjs );
+//            geofenceManager.startScan(5000);
         }
 
         else fragCtrl.getNearbyListFragment().onServerNotAvailable();
@@ -271,6 +273,43 @@ public class MainActivity
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * *  WEBAPP MANAGEMENT  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    private WebAppController webAppController       = null;
+    private WebApp               proximityApp           = null;
+    private WebApp               activeWebApp           = null;
+    public void startAppFragment(WebApp webApp) {
+        //Get the reference to the ReactInstanceManager
+        fragCtrl.changeMode(MainMode.WEBAPP);
+        activeWebApp = webApp;
+        fragCtrl.getWebAppContainerFragment().startApp(webApp);
+        bottomBar.selectTabWithId(R.id.tab_webapp);
+    }
+    public void closeWebApp() {
+        fragCtrl.getWebAppContainerFragment().closeApp();
+    }
+    // public WebApp                   getProximityApp()   { return proximityApp;  }
+    // public WebApp                   getActiveWebApp()   { return activeWebApp;  }
+
+    private void initWebAppController() {
+        webAppController = new WebAppController(locationManager);
+        webAppController.setOnUpdateListener(this);
+    }
+    private void startWebAppController(List<WebApp> downloadedApps) {
+        if(downloadedApps != null)
+            webAppController.start(downloadedApps, this);
+    }
+
+
+    @Override
+    public void onWebAppUpdate(SortedSet<WebApp> proxyApps, SortedSet<WebApp> nearbyApps) {
+        SortedSet<WebApp> newNearbyAppsNotProxy = WebAppController.getNearbyNotInProximity(proxyApps, nearbyApps);
+        fragCtrl.getNearbyListFragment().updateNarbyApps(newNearbyAppsNotProxy, locationManager.getCurrentLocation());
+        fragCtrl.getNearbyListFragment().updateProxyApps(proxyApps, locationManager.getCurrentLocation());
+    }
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
 
@@ -380,10 +419,10 @@ public class MainActivity
 
 
         // Manage fullscreen notification:
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(FULLSCREEN_KEY);
-        broadcastReceiver = new FullscreenBroadcastreceiver();
-        registerReceiver(broadcastReceiver, filter);
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(FULLSCREEN_KEY);
+//        broadcastReceiver = new FullscreenBroadcastreceiver();
+//        registerReceiver(broadcastReceiver, filter);
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -395,9 +434,22 @@ public class MainActivity
         locationManager.setHighAccuracy();
         locationManager.onCreate(savedInstanceState);
         initEddy();
+        initWebAppController();
+
         MainActivity.setMainActivity(this);
         try{ connectToLinkServer(); }
         catch (CentralConnection.DoubleConnectionException e) { e.printStackTrace(); }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.System.canWrite(this)) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE}, 2909);
+            } else {
+                // continue with your code
+            }
+        } else {
+            // continue with your code
+        }
 
     }
     @Override protected void onSaveInstanceState(Bundle outState) {
@@ -420,6 +472,7 @@ public class MainActivity
             fragCtrl.getWebAppContainerFragment().getReactInstanceManager() .onHostResume(this, this);
         }
         locationManager.onResume();
+        FavouriteAppsManager.getInstance(this).loadPreferences();
     }
     @Override protected void onPause() {    // Any activity that uses the ReactFragment or ReactActivty Needs to call onHostPause() on the ReactInstanceManager
         super.onPause();
@@ -427,6 +480,7 @@ public class MainActivity
             fragCtrl.getWebAppContainerFragment().getReactInstanceManager() .onHostPause();
         }
         locationManager.onPause();
+        FavouriteAppsManager.getInstance(this).savePreferences();
     }
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -499,8 +553,8 @@ public class MainActivity
 
     }
     private void hideFullscreenNotification() {
-        if(mNotificationManager != null)
-            mNotificationManager.cancel(FULLSCREEN_NOTIFICATION_ID);
+//        if(mNotificationManager != null)
+//            mNotificationManager.cancel(FULLSCREEN_NOTIFICATION_ID);
     }
 
     //TODO: RECOVEREDVERSION
@@ -526,25 +580,25 @@ public class MainActivity
 
 
     private void showFullscreenNotification() {
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_up_down_arrows_white_24dp)
-                        .setContentTitle("WebApp in fullscreen mode")
-                        .setContentText("Tap to exit fullscreen mode")
-                        .setAutoCancel(true)
-                        .setPriority(Notification.PRIORITY_MAX);
-
-
-
-        Intent closeFullscreenIntent = new Intent(this, FullscreenBroadcastreceiver.class);
-        PendingIntent fullscreenPendingIntent = PendingIntent.getBroadcast(this, 0, closeFullscreenIntent, 0);
-
-        mBuilder.setContentIntent(fullscreenPendingIntent);
-        mBuilder.addAction(R.drawable.ic_up_down_arrows_white_24dp, "com.nagash.appwebbrowser.EXIT_FULLSCREEN", fullscreenPendingIntent);
-
-        if(mNotificationManager == null)
-            mNotificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
-        mNotificationManager.notify(FULLSCREEN_NOTIFICATION_ID, mBuilder.build());
+//        NotificationCompat.Builder mBuilder =
+//                new NotificationCompat.Builder(this)
+//                        .setSmallIcon(R.drawable.ic_up_down_arrows_white_24dp)
+//                        .setContentTitle("WebApp in fullscreen mode")
+//                        .setContentText("Tap to exit fullscreen mode")
+//                        .setAutoCancel(true)
+//                        .setPriority(Notification.PRIORITY_MAX);
+//
+//
+//
+//        Intent closeFullscreenIntent = new Intent(this, FullscreenBroadcastreceiver.class);
+//        PendingIntent fullscreenPendingIntent = PendingIntent.getBroadcast(this, 0, closeFullscreenIntent, 0);
+//
+//        mBuilder.setContentIntent(fullscreenPendingIntent);
+//        mBuilder.addAction(R.drawable.ic_up_down_arrows_white_24dp, "com.nagash.appwebbrowser.EXIT_FULLSCREEN", fullscreenPendingIntent);
+//
+//        if(mNotificationManager == null)
+//            mNotificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
+//        mNotificationManager.notify(FULLSCREEN_NOTIFICATION_ID, mBuilder.build());
 
     }
 

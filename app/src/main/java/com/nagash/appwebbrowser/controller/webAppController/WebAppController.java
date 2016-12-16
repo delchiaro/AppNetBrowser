@@ -1,4 +1,4 @@
-package com.nagash.appwebbrowser.controller;
+package com.nagash.appwebbrowser.controller.webAppController;
 
 import android.content.Context;
 
@@ -10,18 +10,20 @@ import com.nagash.appwebbrowser.model.geofencing.GeoEvent;
 import com.nagash.appwebbrowser.model.geofencing.GeofenceListener;
 import com.nagash.appwebbrowser.model.geofencing.GeofenceManager;
 import com.nagash.appwebbrowser.model.geofencing.GeofenceObject;
+import com.nagash.appwebbrowser.model.geofencing.TriggeredGeofenceableContainer;
 import com.nagash.appwebbrowser.model.geofencing.options.GeofenceOptions;
 import com.nagash.appwebbrowser.model.geofencing.options.ScannerIntervalMode;
 import com.nagash.appwebbrowser.model.localization.LocationManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created by nagash on 11/12/16.
@@ -34,42 +36,48 @@ import java.util.SortedSet;
 public class WebAppController
         implements
         EddystoneProximityListener
-
 {
-    private static final int NEARBY_SCAN_FREQUENCY = 10000;
-    private static final int PROXIMITY_SCAN_FREQUENCY = 5000;
+    private static final int NEARBY_SCAN_FREQUENCY = 1000;
+    private static final int PROXIMITY_SCAN_FREQUENCY = 1000;
 
-    GeofenceManager<WebApp> nearbyGeofenceManager = null;
-    GeofenceManager<WebApp> proximityGeofenceManager = null;
-    EddystoneProximityManager eddystoneProximityManager;
 
-    GeofenceOptions nearbyGeofenceOptions;
-    GeofenceOptions proximityGeofenceOptions;
+    private List<WebAppListener> webAppListeners = new ArrayList<>();
+    private GeofenceManager<WebApp> nearbyGeofenceManager = null;
+    private GeofenceManager<WebApp> proximityGeofenceManager = null;
+    private EddystoneProximityManager eddystoneProximityManager;
+
+    private GeofenceOptions nearbyGeofenceOptions;
+    private GeofenceOptions proximityGeofenceOptions;
 
     public WebAppController(LocationManager locationManager) {
         nearbyGeofenceOptions = new GeofenceOptions();
-        nearbyGeofenceOptions.setExtraRadius(300000);
+        nearbyGeofenceOptions.setExtraRadius(3000000);
         nearbyGeofenceOptions.useExtraRadius();
-        nearbyGeofenceOptions.advertiseOnEmptyList();
+        //nearbyGeofenceOptions.advertiseOnEmptyList();
         nearbyGeofenceOptions.setScannerIntervalMode(ScannerIntervalMode.timerBased);
         nearbyGeofenceManager = new GeofenceManager<>(locationManager, nearbyGeofencListener, nearbyGeofenceOptions);
 
         proximityGeofenceOptions = new GeofenceOptions();
+        proximityGeofenceOptions.setExtraRadius(100);
+        proximityGeofenceOptions.useExtraRadius();
         proximityGeofenceOptions.setScannerIntervalMode(ScannerIntervalMode.timerBased);
-        proximityGeofenceOptions.advertiseOnEmptyList();
+        //proximityGeofenceOptions.advertiseOnEmptyList();
         proximityGeofenceManager = new GeofenceManager<>(locationManager, proxyGeofencListener, proximityGeofenceOptions);
 
         eddystoneSettings = new EddystoneProximityManager.Settings();
         eddystoneSettings.advertiseInProximity(true);
         eddystoneSettings.advertiseConnectedOutProximity(true);
+    }
 
+    public void setOnUpdateListener(WebAppListener listener) {
+        this.webAppListeners.add(listener);
     }
 
 
-    Collection<GeofenceObject<WebApp>> geofenceObjects;
-    Map<String, WebApp> webAppBeaconMap = new HashMap<>();
+    private Collection<GeofenceObject<WebApp>> geofenceObjects;
+    private Map<String, WebApp> webAppBeaconMap = new HashMap<>();
 
-    EddystoneProximityManager.Settings eddystoneSettings;
+    private EddystoneProximityManager.Settings eddystoneSettings;
 
 
     public void start(List<WebApp> allApps, Context context) {
@@ -114,51 +122,67 @@ public class WebAppController
 
 
 
-    SortedSet<WebApp> nearbySet = null;
-    SortedSet<WebApp> proximitySet = null;
-    Set<WebApp> nearbyNotInproximitySet = new HashSet<>();
+    private SortedSet<WebApp> nearbySet = null;
+    private SortedSet<WebApp> proximitySet = null;
 
 
+    boolean changes = false;
 
     // * * * * * * * * * * * * GEOFENCE LISTENER  * * * * * * * * * * * *
-    GeofenceListener<WebApp>  nearbyGeofencListener = new GeofenceListener<WebApp>() {
-        @Override public void onGeofenceIn(SortedSet<WebApp> triggeredGeofences) {
+    private GeofenceListener<WebApp>  nearbyGeofencListener = new GeofenceListener<WebApp>() {
+
+        @Override
+        public void onGeofenceScanTask(TriggeredGeofenceableContainer<WebApp> triggered) {
             nearbyGeofenceManager.stopScan();
-            //  update nearby list (re-ordering or add items)
-            nearbySet = triggeredGeofences;
-            nearbyNotInproximitySet = nearbySet;
-            nearbyNotInproximitySet.removeAll(proximitySet);
+            if(triggered.isAtLeastOneEntering()) {
+                changes = true;
+                proximityGeofenceManager.addAll(triggered.enteringSet,  new GeoEvent().enableEnteringEvent().enableExitingEvent());
+            }
+            if(triggered.isAtLeastOneExiting()) {
+                changes = true;
+                proximityGeofenceManager.removeAll(triggered.exitingSet);
+            }
+
+            if(triggered.isAtLeastOneIn()) {
+                nearbySet = triggered.inSet;
+            }
             proximityGeofenceManager.startScan(PROXIMITY_SCAN_FREQUENCY);
         }
-        @Override public void onGeofenceOut(SortedSet<WebApp> triggeredGeofences) {}
-        @Override public void onGeofenceEntering(SortedSet<WebApp> triggeredGeofences) {
-            proximityGeofenceManager.addAll(triggeredGeofences, new GeoEvent().enableEnteringEvent().enableExitingEvent());
-        }
-        @Override public void onGeofenceExiting(SortedSet<WebApp> triggeredGeofences) {
-            proximityGeofenceManager.removeAll(triggeredGeofences);
 
-            //  update nearby list (ignore re-ordering, only remove items)
-            if(nearbySet != null && triggeredGeofences != null)
-                nearbySet.removeAll(triggeredGeofences);
-        }
+
     };
+    private GeofenceListener<WebApp>  proxyGeofencListener = new GeofenceListener<WebApp>() {
 
-    GeofenceListener<WebApp>  proxyGeofencListener = new GeofenceListener<WebApp>() {
-        @Override public void onGeofenceIn(SortedSet<WebApp> triggeredGeofences) {
+        @Override
+        public void onGeofenceScanTask(TriggeredGeofenceableContainer<WebApp> triggered) {
             proximityGeofenceManager.stopScan();
+            if(triggered.isAtLeastOneEntering() || triggered.isAtLeastOneExiting()) {
+                changes = true;
+                proximitySet = triggered.inSet;
+            }
+
+            if(changes)
+                for(WebAppListener l : webAppListeners)
+                    l.onWebAppUpdate(proximitySet, nearbySet);
+
+
+            // reset changes flag befor start new scan loop (scan loop: nearby scan -> proxy scan )
+            changes = false;
             nearbyGeofenceManager.startScan(NEARBY_SCAN_FREQUENCY);
         }
-        @Override public void onGeofenceOut(SortedSet<WebApp> triggeredGeofences) {}
-        @Override public void onGeofenceEntering(SortedSet<WebApp> triggeredGeofences) {
-            //  update proximity list! (add items)
-            if(triggeredGeofences != null)
-               proximitySet.addAll(triggeredGeofences);
-        }
-        @Override public void onGeofenceExiting(SortedSet<WebApp> triggeredGeofences) {
-            // update proximity list! (remove items)
-            if(triggeredGeofences != null)
-                proximitySet.removeAll(triggeredGeofences);
-        }
+
+
     };
+
+
+
+
+
+    public static SortedSet<WebApp> getNearbyNotInProximity( SortedSet<WebApp> proximitySet, SortedSet<WebApp> nearbySet ) {
+        SortedSet<WebApp> nearbyNotInproximitySet = new TreeSet<>(nearbySet);
+        if(proximitySet != null)
+            nearbyNotInproximitySet.removeAll(proximitySet);
+        return nearbyNotInproximitySet;
+    }
 
 }

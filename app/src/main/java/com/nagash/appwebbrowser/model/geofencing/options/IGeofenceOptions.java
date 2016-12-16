@@ -11,7 +11,7 @@ public interface IGeofenceOptions {
     int getExtraRadius();
     boolean isUsingExtraRadius();
     boolean isUsingOnlyExtraRadius() ;
-    boolean isAdvertiseOnEmptyList();
+   // boolean isAdvertiseOnEmptyList();
 
 
 //    public int getScannerUpdateFrequency();

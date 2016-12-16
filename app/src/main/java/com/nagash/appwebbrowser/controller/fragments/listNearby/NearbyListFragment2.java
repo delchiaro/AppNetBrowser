@@ -1,29 +1,29 @@
 package com.nagash.appwebbrowser.controller.fragments.listNearby;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.MainFragment;
-import com.nagash.appwebbrowser.controller.fragments.WebAppListAdapter;
-import com.nagash.appwebbrowser.model.connection.CentralConnection;
+import com.nagash.appwebbrowser.model.localization.LocationManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 
-import java.util.List;
+import java.util.SortedSet;
+
+import it.gmariotti.cardslib.library.view.CardViewNative;
 
 /**
  * Created by nagash on 15/09/16.
  */
-public class NearbyListFragment extends MainFragment
+public class NearbyListFragment2 extends MainFragment
 {
 
 
@@ -32,8 +32,12 @@ public class NearbyListFragment extends MainFragment
     ProgressBar progressBarLinkServer = null;
     Button btnConnect = null;
     TextView tvConnectionStatus = null;
-    ListView listView = null;
-    View fragmentListLayout = null;
+//    ListView nearbyListView = null;
+//    ListView proxyListView = null;
+    CardViewNative nearbyCardView = null;
+    CardViewNative proxyCardView = null;
+    AppListCard nearbyAppListCard = null;
+    AppListCard proxyAppListCard = null;
 
 
 
@@ -44,7 +48,7 @@ public class NearbyListFragment extends MainFragment
 
     private static final int ACTIONBAR_TITLE_ID = R.string.nearby_fragment_actionbar_title;
 
-    public NearbyListFragment() {
+    public NearbyListFragment2() {
         super();
         setColorID(R.color.colorNearbyPrimary);
         setColorDarkID(R.color.colorNearbyPrimaryDark);
@@ -74,8 +78,8 @@ public class NearbyListFragment extends MainFragment
         {
             progressBarLinkServer.setVisibility(View.GONE);
             tvConnectionStatus.setText(R.string.server_list_connected);
+            tvConnectionStatus.setVisibility(View.GONE);
             btnConnect.setVisibility(View.GONE);
-            updateAppList();
         }
 
     }
@@ -94,7 +98,7 @@ public class NearbyListFragment extends MainFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_list_nearby, container, false);
+        View view = inflater.inflate(R.layout.fragment_list_nearby_2, container, false);
         return view;
     }
 
@@ -105,8 +109,37 @@ public class NearbyListFragment extends MainFragment
         progressBarLinkServer = (ProgressBar)getActivity().findViewById(R.id.progressBarLinkServer);
         btnConnect            = (Button)     getActivity().findViewById(R.id.btnConnect);
         tvConnectionStatus    = (TextView)   getActivity().findViewById(R.id.tvAppList);
-        listView              = (ListView)   getActivity().findViewById(R.id.app_listView);
-        fragmentListLayout    =              getActivity().findViewById(R.id.fragment_list_layout);
+//        nearbyListView        = (ListView)   getActivity().findViewById(R.id.listViewNearbyApps);
+//        proxyListView         = (ListView)   getActivity().findViewById(R.id.listViewProxyApps);
+
+        AppListCard.AppListItemListener itemListener = new AppListCard.AppListItemListener() {
+            @Override public void onItemClick(WebApp webApp) {
+                getMainActivity().showAppDetails(webApp);
+            }
+            @Override public void onButtonClick(WebApp webApp) {
+                getMainActivity().startAppFragment(webApp);
+            }
+            @Override public void onSwipe(WebApp webApp) {}
+        };
+
+        nearbyAppListCard = new AppListCard(getActivity(), "Nearby Apps", false);
+        nearbyAppListCard.init();
+        nearbyAppListCard.setAppListItemlistener(itemListener);
+        nearbyAppListCard.updateProgressBar(false,false);
+
+
+        proxyAppListCard = new AppListCard(getActivity(), "Apps in your proximity", false);
+        proxyAppListCard.init();
+        proxyAppListCard.setAppListItemlistener(itemListener);
+        proxyAppListCard.updateProgressBar(false,false);
+
+
+        nearbyCardView = (CardViewNative) getActivity().findViewById(R.id.nearby_app_list_card);
+        nearbyCardView.setCard(nearbyAppListCard);
+
+        proxyCardView = (CardViewNative) getActivity().findViewById(R.id.proxy_app_list_card);
+        proxyCardView.setCard(proxyAppListCard);
+
         btnConnect.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { getMainActivity().retryConnection();}  });
         refreshState();
 
@@ -122,48 +155,16 @@ public class NearbyListFragment extends MainFragment
 
 
 
-
-
-
-    public void updateAppList()
-    {
-        final List<WebApp> appList = CentralConnection.instance().getCachedWebAppList();
-        if(appList != null && appList.isEmpty() == false)
-        {
-            // Create the adapter to convert the array to views
-            WebAppListAdapter adapter = new WebAppListAdapter(getMainActivity(), appList);
-
-            // Attach the adapter to a ListView
-            listView.setAdapter(adapter);
-            listView.setItemsCanFocus(false);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                   // Snackbar.make(fragmentListLayout, "Item Selected!", Snackbar.LENGTH_LONG).show();
-                    getMainActivity().showAppDetails(appList.get(i));
-                }
-            });
-
-
-            listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    //Snackbar.make(fragmentListLayout, "Item Selected!", Snackbar.LENGTH_LONG).show();
-                    getMainActivity().showAppDetails(appList.get(i));
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                }
-            });
-        }
+    public void updateNarbyApps(SortedSet<WebApp> nearby, Location myLocation) {
+        nearbyAppListCard.updateItems(nearby, myLocation);
+        proxyAppListCard.updateProgressBar(true,true);
+        nearbyAppListCard.updateProgressBar(true,true);
 
     }
 
-
-
-
+    public void updateProxyApps(SortedSet<WebApp> proxy, Location myLocation) {
+        proxyAppListCard.updateItems(proxy, myLocation);
+    }
 
 
     // * * * * * DOWNLOAD SERVER * * * * *

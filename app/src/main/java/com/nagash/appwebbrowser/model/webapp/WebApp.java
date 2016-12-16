@@ -83,8 +83,41 @@ public class WebApp implements Geofenceable {
         return defaultGeofenceRadius;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WebApp webApp = (WebApp) o;
+
+        return protoWebApp.getAppId().equals(webApp.protoWebApp.getAppId());
+
+    }
+
+    @Override
+    public int hashCode() {
+        return protoWebApp.getAppId().hashCode();
+    }
 
 
-
-
+    //    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//
+//        WebApp webApp = (WebApp) o;
+//
+//        if (!protoWebApp.getAppId().equals(webApp.protoWebApp.getAppId())) return false;
+//        if (eddystoneBeacon != null ? !eddystoneBeacon.equals(webApp.eddystoneBeacon) : webApp.eddystoneBeacon != null)
+//            return false;
+//        return location != null ? location.equals(webApp.location) : webApp.location == null;
+//
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        int result = defaultGeofenceRadius;
+//        result = 31 * result + protoWebApp.getAppId().hashCode();
+//        return result;
+//    }
 }

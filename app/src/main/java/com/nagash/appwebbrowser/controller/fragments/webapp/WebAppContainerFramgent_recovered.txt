@@ -32,7 +32,7 @@ import com.nagash.appwebbrowser.controller.fragments.webapp.reactnative.ReactFra
 import com.nagash.appwebbrowser.model.connection.AppBundleDownloadHandler;
 import com.nagash.appwebbrowser.model.connection.AppBundleDownloader;
 import com.nagash.appwebbrowser.model.connection.CentralConnection;
-import com.nagash.appwebbrowser.model.webapp.FavoriteAppsManager;
+import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 import java.io.File;
 import protobuf.app.App.WebApp;
@@ -43,7 +43,7 @@ public class WebAppContainerFragment
 {
   public static final long serialVersionUID = 0L;
   public int bottomBackup;
-  private FavoriteAppsManager favoriteAppsManager;
+  private FavoriteAppsManager favouriteAppsManager;
   public boolean favoriteToggle;
   private FrameLayout fragmentContainer;
   public boolean isFullscreen;
@@ -73,8 +73,8 @@ public class WebAppContainerFragment
       return;
       if ((this.webApp != null) && (this.webApp.getId() != null))
       {
-        this.favoriteAppsManager.loadPreferences();
-        this.favoriteToggle = this.favoriteAppsManager.isFavorite(this.webApp);
+        this.favouriteAppsManager.loadPreferences();
+        this.favoriteToggle = this.favouriteAppsManager.isFavorite(this.webApp);
       }
     }
   }
@@ -130,8 +130,8 @@ public class WebAppContainerFragment
       return;
       if ((this.webApp != null) && (this.webApp.getId() != null))
       {
-        this.favoriteAppsManager.setFavorite(this.webApp, this.favoriteToggle);
-        this.favoriteAppsManager.savePreferences();
+        this.favouriteAppsManager.setFavorite(this.webApp, this.favoriteToggle);
+        this.favouriteAppsManager.savePreferences();
       }
     }
   }
@@ -358,7 +358,7 @@ public class WebAppContainerFragment
       if (this.webApp != null) {
         startApp();
       }
-      this.favoriteAppsManager = new FavoriteAppsManager(getActivity());
+      this.favouriteAppsManager = new FavoriteAppsManager(getActivity());
       setHasOptionsMenu(true);
     }
   }

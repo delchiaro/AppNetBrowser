@@ -5,7 +5,7 @@ package com.nagash.appwebbrowser.model.geofencing.options;
  */
 
 public class GeofenceOptions implements IGeofenceOptions {
-    private boolean advertiseOnEmptyList = false;
+    //private boolean advertiseOnEmptyList = false;
 
     private ScannerIntervalMode scannerIntervalMode = ScannerIntervalMode.timerBased;
 //    int scannerTimerFrequency = 5000; // geofence scanning each 5000ms (if timerBased)
@@ -26,7 +26,7 @@ public class GeofenceOptions implements IGeofenceOptions {
 
     public GeofenceOptions(){}
     public GeofenceOptions(IGeofenceOptions copy) {
-        this.advertiseOnEmptyList = copy.isAdvertiseOnEmptyList();
+        //this.advertiseOnEmptyList = copy.isAdvertiseOnEmptyList();
         scannerIntervalMode = copy.getScannerIntervalMode(); // Todo: Enums are copied by value or ref??
         extraRadius = copy.getExtraRadius();
         useExtraRadius = copy.isUsingExtraRadius();
@@ -44,7 +44,7 @@ public class GeofenceOptions implements IGeofenceOptions {
     public void useExtraRadius() { useExtraRadius = true; }
     public void useOnlyExtraRadius() { useOnlyExtraRadius = true; }
     public void setExtraRadius(int extraRadius) { this.extraRadius = extraRadius; useExtraRadius(); }
-    public void advertiseOnEmptyList() { advertiseOnEmptyList = true; }
+    //public void advertiseOnEmptyList() { advertiseOnEmptyList = true; }
 //    public void setScannerIntervalTimer(int milliseconds) {
 //        scannerTimerFrequency = milliseconds;
 //        scannerIntervalMode = ScannerIntervalMode.timerBased;
@@ -59,7 +59,7 @@ public class GeofenceOptions implements IGeofenceOptions {
     public boolean isUsingExtraRadius() { return useExtraRadius; }
     public boolean isUsingOnlyExtraRadius() { return useOnlyExtraRadius; }
     public int getExtraRadius() { return extraRadius; }
-    public boolean isAdvertiseOnEmptyList() { return advertiseOnEmptyList; }
+    //public boolean isAdvertiseOnEmptyList() { return advertiseOnEmptyList; }
 
 
     public ScannerIntervalMode getScannerIntervalMode() {

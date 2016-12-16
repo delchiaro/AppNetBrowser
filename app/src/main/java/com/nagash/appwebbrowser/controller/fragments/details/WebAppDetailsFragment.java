@@ -12,7 +12,7 @@ import android.widget.EditText;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.MainFragment;
-import com.nagash.appwebbrowser.model.webapp.FavoriteAppsManager;
+import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 
 /**
@@ -23,17 +23,19 @@ public class WebAppDetailsFragment extends MainFragment {
 
     private WebApp webApp = null;
     private boolean favoriteToggle = false;
-    private final FavoriteAppsManager favoriteAppsManager;
+    private final FavouriteAppsManager favouriteAppsManager;
 
-    public WebAppDetailsFragment(MainFragment parentFragment) {
-        super(MainFragment.builder()
-                .setBackButton(BackButton.VISIBLE)
-                .setColor(parentFragment.getColorID())
-                .setColorDark(parentFragment.getColorDarkID())
-                .build() );
-        favoriteAppsManager = new FavoriteAppsManager(parentFragment.getActivity());
+    public WebAppDetailsFragment() {
+        super();
+        setBackButton(BackButton.VISIBLE);
+        favouriteAppsManager = FavouriteAppsManager.getInstance(getActivity());
     }
 
+    public WebAppDetailsFragment setParentFragmentStyle(MainFragment parentFragment) {
+        setColorID(parentFragment.getColorID());
+        setColorDarkID(parentFragment.getColorDarkID());
+        return this;
+    }
 
 
 
@@ -93,6 +95,7 @@ public class WebAppDetailsFragment extends MainFragment {
     @Override public void onFragmentShown() {
         super.onFragmentShown();
         getMainActivity().showBackButton();
+        loadFavorite();
     }
     @Override public void onFragmentHidden() {
         super.onFragmentHidden();
@@ -150,15 +153,16 @@ public class WebAppDetailsFragment extends MainFragment {
     private void saveFavorite() {
         if(webApp != null && webApp.getId() != null)
         {
-            favoriteAppsManager.setFavorite(webApp, this.favoriteToggle);
-            favoriteAppsManager.savePreferences();
+            favouriteAppsManager.setFavorite(webApp, this.favoriteToggle);
+            favouriteAppsManager.savePreferences();
         }
     }
     private void loadFavorite() {
         if(webApp!=null && webApp.getId()!= null)
         {
-            favoriteAppsManager.loadPreferences();
-            favoriteToggle = favoriteAppsManager.isFavorite(webApp);
+            favouriteAppsManager.loadPreferences();
+            favoriteToggle = favouriteAppsManager.isFavorite(webApp);
+            updateFavoriteIcon();
         }
     }
 

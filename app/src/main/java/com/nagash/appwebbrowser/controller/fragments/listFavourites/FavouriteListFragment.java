@@ -2,24 +2,18 @@ package com.nagash.appwebbrowser.controller.fragments.listFavourites;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import com.nagash.appwebbrowser.R;
-import com.nagash.appwebbrowser.controller.MainActivity;
 import com.nagash.appwebbrowser.controller.MainFragment;
 import com.nagash.appwebbrowser.controller.fragments.WebAppListAdapter;
 import com.nagash.appwebbrowser.model.connection.CentralConnection;
-import com.nagash.appwebbrowser.model.webapp.FavoriteAppsManager;
+import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class FavouriteListFragment  extends MainFragment
@@ -34,13 +28,14 @@ public class FavouriteListFragment  extends MainFragment
   private static final int ACTIONBAR_TITLE_ID = R.string.favourites_fragment_actionbar_title;
 
   public FavouriteListFragment() {
-    super(MainFragment.builder()
-            .setColor(R.color.colorFavouritesPrimary)
-            .setColorDark(R.color.colorFavouritesPrimaryDark)
-            .setTitle(ACTIONBAR_TITLE_ID));
-    this.listView = null;
+    super();
+      setColorID(R.color.colorFavouritesPrimary);
+      setColorDarkID(R.color.colorFavouritesPrimaryDark);
+      setTitle(ACTIONBAR_TITLE_ID);
+      this.listView = null;
     this.fragmentListLayout = null;
   }
+;
 
 
 
@@ -71,7 +66,7 @@ public class FavouriteListFragment  extends MainFragment
 //    final List<WebApp> appList = CentralConnection.instance().getCachedWebAppList();
 //    if(appList != null && appList.isEmpty() == false && isAdded() )
 //    {
-//      FavoriteAppsManager favoriteAppsManager = new FavoriteAppsManager(getActivity());
+//      FavouriteAppsManager favoriteAppsManager = new FavouriteAppsManager(getActivity());
 //      final List<WebApp> favorites = new ArrayList<>(favoriteAppsManager.filterFavoritesApps(appList));
 //
 //      // Create the adapter to convert the array to views
@@ -106,7 +101,7 @@ public class FavouriteListFragment  extends MainFragment
 
         final List cachedWebAppList = CentralConnection.instance().getCachedWebAppList();
         if (this.listView != null && cachedWebAppList != null && !cachedWebAppList.isEmpty()) {
-            final ArrayList<WebApp> favorites = new ArrayList<>(new FavoriteAppsManager(this.getActivity()).filterFavoritesApps(cachedWebAppList));
+            final ArrayList<WebApp> favorites = new ArrayList<>(FavouriteAppsManager.getInstance(this.getActivity()).filterFavoritesApps(cachedWebAppList));
             this.listView.setAdapter( new WebAppListAdapter(this.getMainActivity(), favorites) );
             this.listView.setItemsCanFocus(false);
 

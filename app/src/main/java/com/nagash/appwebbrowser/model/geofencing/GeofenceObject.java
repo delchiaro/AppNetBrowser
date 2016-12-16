@@ -105,5 +105,19 @@ public class GeofenceObject< G extends Geofenceable> implements Geofenceable
         return managedObject;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        GeofenceObject<?> that = (GeofenceObject<?>) o;
+
+        return managedObject.equals(that.managedObject);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return managedObject.hashCode();
+    }
 }

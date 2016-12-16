@@ -9,4 +9,13 @@
 
 
     <dimen name="app_info_element_padding_right">6dp</dimen>
+
+    <dimen name="card_base_cardwithlist_layout_leftmargin">0dp</dimen>
+    <dimen name="card_base_cardwithlist_layout_rightmargin">0dp</dimen>
+    <dimen name="card_base_cardwithlist_layout_bottommargin">0dp</dimen>
+    <dimen name="card_base_cardwithlist_layout_topmargin">0dp</dimen>
+
+    <dimen name="card_base_cardwithlist_list_margin_top">0dp</dimen>
+    <dimen name="card_base_cardwithlist_list_margin_bottom">0dp</dimen>
+    <dimen name="card_base_cardwithlist_list_margin_left">0dp</dimen>
 </resources>

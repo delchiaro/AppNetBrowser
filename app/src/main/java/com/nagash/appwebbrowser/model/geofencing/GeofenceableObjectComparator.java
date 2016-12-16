@@ -17,12 +17,13 @@ public class GeofenceableObjectComparator implements Comparator<Geofenceable>
     }
 
     @Override
-    public int compare(Geofenceable geofenceableObject, Geofenceable t2) {
+    public int compare(Geofenceable geofenceableObject, Geofenceable geofenceableObject2) {
         float dist1 = geofenceableObject.getLocation().distanceTo(this.myLocation);
-        float dist2 = geofenceableObject.getLocation().distanceTo(this.myLocation);
+        float dist2 = geofenceableObject2.getLocation().distanceTo(this.myLocation);
         if(dist1<dist2)
-            return 1;
+            return -1;
         else if(dist1==dist2)
             return 0;
-        else return -1;    }
+        else return 1;
+    }
 }

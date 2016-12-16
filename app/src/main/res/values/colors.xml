@@ -35,4 +35,12 @@
     <color name="color_tab_1">#FF4081</color>
     <color name="color_tab_2">#FF4081</color>
     <color name="color_tab_3">#FF4081</color>
+
+
+
+
+    <color name="demo_card_weather_city_color">#A4A4A4</color>
+    <color name="demo_card_weather_temperature_color">#868686</color>
+    <color name="pressed_carddemo">#CC2A84A5</color>
+
 </resources>

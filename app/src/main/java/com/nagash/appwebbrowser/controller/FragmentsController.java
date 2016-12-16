@@ -2,8 +2,10 @@ package com.nagash.appwebbrowser.controller;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.fragments.details.WebAppDetailsFragment;
+import com.nagash.appwebbrowser.controller.fragments.listFavourites.FavouriteListFragment2;
 import com.nagash.appwebbrowser.controller.fragments.listNearby.NearbyListFragment;
 import com.nagash.appwebbrowser.controller.fragments.listFavourites.FavouriteListFragment;
+import com.nagash.appwebbrowser.controller.fragments.listNearby.NearbyListFragment2;
 import com.nagash.appwebbrowser.controller.fragments.map.WebAppMapFragment;
 import com.nagash.appwebbrowser.controller.fragments.webapp.WebAppContainerFragment;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
@@ -25,8 +27,8 @@ public class FragmentsController
 
 
 
-    private NearbyListFragment      nearbyListFragment      = null;
-    private FavouriteListFragment   favouriteListFragment   = null;
+    private NearbyListFragment2     nearbyListFragment      = null;
+    private FavouriteListFragment2  favouriteListFragment   = null;
     private WebAppContainerFragment webAppContainerFragment = null;
     private WebAppMapFragment       mapFragment             = null;
 
@@ -66,7 +68,7 @@ public class FragmentsController
 
 
 
-    public NearbyListFragment       getNearbyListFragment() {
+    public NearbyListFragment2       getNearbyListFragment() {
         return nearbyListFragment;
     }
     public WebAppContainerFragment  getWebAppContainerFragment() {
@@ -89,19 +91,19 @@ public class FragmentsController
             if (mainMode == MainMode.NEARBY)
             {
                 if (webAppDetailsFragment_nearby == null)
-                    webAppDetailsFragment_nearby = new WebAppDetailsFragment(nearbyListFragment);
+                    webAppDetailsFragment_nearby = (new WebAppDetailsFragment()).setParentFragmentStyle(nearbyListFragment);
                 detailsFragment = webAppDetailsFragment_nearby;
             }
             else if( mainMode == MainMode.FAVOURITES)
             {
                 if (webAppDetailsFragment_favourites == null)
-                    webAppDetailsFragment_favourites = new WebAppDetailsFragment(favouriteListFragment);
+                    webAppDetailsFragment_favourites = (new WebAppDetailsFragment()).setParentFragmentStyle(favouriteListFragment);
                 detailsFragment = webAppDetailsFragment_favourites;
             }
             else if (mainMode == MainMode.MAP)
             {
                 if (webAppDetailsFragment_map == null)
-                    webAppDetailsFragment_map = new WebAppDetailsFragment(mapFragment);
+                    webAppDetailsFragment_map = (new WebAppDetailsFragment()).setParentFragmentStyle(mapFragment);
                 detailsFragment = webAppDetailsFragment_map;
             }
             else return;
@@ -159,7 +161,7 @@ public class FragmentsController
 
             case NEARBY:
                 if (nearbyListFragment == null)
-                    nearbyListFragment = new NearbyListFragment();
+                    nearbyListFragment = new NearbyListFragment2();
                 if(webAppDetailsFragment_nearby != null)
                     fragmentHelper.activateFragment(webAppDetailsFragment_nearby);
                 else fragmentHelper.activateFragment(nearbyListFragment);
@@ -167,7 +169,7 @@ public class FragmentsController
 
             case FAVOURITES:
                 if(favouriteListFragment == null)
-                    favouriteListFragment = new FavouriteListFragment();
+                    favouriteListFragment = new FavouriteListFragment2();
                 if(webAppDetailsFragment_favourites != null)
                     fragmentHelper.activateFragment(webAppDetailsFragment_favourites);
                 else fragmentHelper.activateFragment(favouriteListFragment);

@@ -16,9 +16,9 @@ public class GeofenceOptionsImmutable implements IGeofenceOptions {
         return new GeofenceOptions(this);
     }
 
-    public boolean isAdvertiseOnEmptyList() {
-        return geofenceOptions.isAdvertiseOnEmptyList();
-    }
+//    public boolean isAdvertiseOnEmptyList() {
+//        return geofenceOptions.isAdvertiseOnEmptyList();
+//    }
 
     public boolean isUsingExtraRadius() {
         return geofenceOptions.isUsingExtraRadius();

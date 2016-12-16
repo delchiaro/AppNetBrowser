@@ -31,10 +31,10 @@ public class WebAppMapFragment
     WebApp selectedWebApp = null;
 
     public WebAppMapFragment() {
-        super(MainFragment.builder()
-                .setColor(R.color.colorMapPrimary)
-                .setColorDark(R.color.colorMapPrimaryDark)
-                .setTitle(ACTIONBAR_TITLE_ID));
+        super();
+        setColorID(R.color.colorMapPrimary);
+        setColorDarkID(R.color.colorMapPrimaryDark);
+        setTitle(ACTIONBAR_TITLE_ID);
     }
 
 

@@ -22,7 +22,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.MainFragment;
-import com.nagash.appwebbrowser.controller.MainFragmentBuilder;
 import com.nagash.appwebbrowser.model.localization.Localizable;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 
@@ -45,10 +44,10 @@ public class AMapFragment<L extends Localizable> extends MainFragment
     private List<L>            localizables = null;
     private Map<Marker, L>     markersMap = new HashMap<>();
 
-
-    public AMapFragment(MainFragmentBuilder builder) {
-        super(builder);
+    public AMapFragment() {
+        super();
     }
+
 
 
 

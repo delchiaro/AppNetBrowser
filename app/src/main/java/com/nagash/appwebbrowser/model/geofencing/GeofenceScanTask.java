@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import com.nagash.appwebbrowser.model.geofencing.options.EmptyListAdvertiseOptions;
 import com.nagash.appwebbrowser.model.geofencing.options.IGeofenceOptions;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -13,7 +14,7 @@ import java.util.Set;
  */
 
 
-public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Set<GeofenceObject<T>>, String, TriggeredGeofenceableList<T>> {
+public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Collection<GeofenceObject<T>>, String, TriggeredGeofenceableContainer<T>> {
 
 
 //    private boolean useExtraRadius = false;
@@ -35,12 +36,12 @@ public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Set<Geo
 
 
     @Override
-    protected  TriggeredGeofenceableList<T> doInBackground(Set<GeofenceObject<T>>... list)
+    protected TriggeredGeofenceableContainer<T> doInBackground(Collection<GeofenceObject<T>>... list)
     {
-        TriggeredGeofenceableList<T> tgl = new TriggeredGeofenceableList(new GeofenceableObjectComparator(myLocation));
+        TriggeredGeofenceableContainer<T> tgl = new TriggeredGeofenceableContainer(new GeofenceableObjectComparator(myLocation));
 
 
-        Set<GeofenceObject<T>> set = list[0];
+        Collection<GeofenceObject<T>> set = list[0];
         if(set == null) return null;
 
         for(GeofenceObject<T> geoObj : set)
@@ -64,12 +65,12 @@ public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Set<Geo
                     if ( regEvent.eventIn()  )
                     {
                         geoObj.setTriggeredEvent(new GeoEvent().enableInEvent());
-                        tgl.triggeredInGeofences.add(geoObj.getManagedObject());
+                        tgl.inSet.add(geoObj.getManagedObject());
                     }
-                    else if (regEvent.eventEntering()
+                    if (regEvent.eventEntering()
                             && (oldGeoStatus == GeoStatus.OUT || oldGeoStatus == GeoStatus.INIT)) {
                         geoObj.setTriggeredEvent(new GeoEvent().enableEnteringEvent() );
-                        tgl.triggeredEnteringGeofences.add(geoObj.getManagedObject());
+                        tgl.enteringSet.add(geoObj.getManagedObject());
                     }
                     geoObj.setGeoStatus(GeoStatus.IN);
                     break;
@@ -80,12 +81,13 @@ public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Set<Geo
                     if (regEvent.eventOut() )
                     {
                         geoObj.setTriggeredEvent(new GeoEvent().enableOutEvent());
-                        tgl.triggeredOutGeofences.add(geoObj.getManagedObject());
+                        tgl.outSet.add(geoObj.getManagedObject());
                     }
-                    else if ( new GeoEvent().eventExiting() && (oldGeoStatus == GeoStatus.IN || oldGeoStatus == GeoStatus.INIT))
+                    if ( new GeoEvent().eventExiting() && (oldGeoStatus == GeoStatus.IN ) )
+                            // || oldGeoStatus == GeoStatus.INIT))
                     {
                         geoObj.setTriggeredEvent(new GeoEvent().enableExitingEvent() );
-                        tgl.triggeredExitingGeofences.add(geoObj.getManagedObject());
+                        tgl.exitingSet.add(geoObj.getManagedObject());
 
                         // TODO: THIS IS TO FIX THE CRAZY NO SENSE BUG O_O
                         // For jumps to the last instruction of this context (else if {..}) after the last iteration
@@ -113,7 +115,7 @@ public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Set<Geo
 
 
     @Override
-    protected void onPostExecute(TriggeredGeofenceableList<T> tgl) {
+    protected void onPostExecute(TriggeredGeofenceableContainer<T> tgl) {
         super.onPostExecute(tgl);
         if(advertiseOnEmptyList() || tgl.isAtLeastOneTriggered() )
             geofenceManager.onGeofenceScanTaskFinished(tgl);

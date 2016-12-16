@@ -3,7 +3,6 @@ package com.nagash.appwebbrowser.model.geofencing;
 import android.location.Location;
 import android.support.v4.os.AsyncTaskCompat;
 
-import com.google.android.gms.location.Geofence;
 import com.nagash.appwebbrowser.model.localization.LocationEventListener;
 import com.nagash.appwebbrowser.model.localization.LocationManager;
 import com.nagash.appwebbrowser.model.geofencing.asyncTimer.AsyncTimer;
@@ -14,9 +13,7 @@ import com.nagash.appwebbrowser.model.geofencing.options.ScannerIntervalMode;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by nagash on 23/09/16.
@@ -31,7 +28,7 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
 
     //Set<GeofenceObject<T>> geofenceObjects = new LinkedHashSet<>();
     Map<T, GeofenceObject<T>> geofenceObjects = new HashMap<>();
-    TriggeredGeofenceableList<T> triggeredGeofenceList = null;
+    TriggeredGeofenceableContainer<T> triggeredGeofenceList = null;
 
 
 
@@ -41,7 +38,7 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
     private boolean locationChanged = false; // used only in Timer based Scan
 
 
-    enum Event { ENTER, EXIT }
+//    enum Event { ENTER, EXIT }
 
 
 
@@ -152,20 +149,21 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
         {
             scanTask = new GeofenceScanTask(this, locationManager.getCurrentLocation(), options);
             //scanTask.execute(this.geofenceObjects);
-            AsyncTaskCompat.executeParallel(scanTask, this.geofenceObjects);
+            AsyncTaskCompat.executeParallel(scanTask, this.geofenceObjects.values());
         }
 
         return ret;
     }
 
     @Override public void onTimerLoop() {
+
         if(options.getScannerIntervalMode() != ScannerIntervalMode.timerBased) return;
         if(scanTask == null && locationChanged) {
             locationChanged = false;
             scanTask = new GeofenceScanTask(this, locationManager.getCurrentLocation(), options);
             //scanTask.execute(this.geofenceObjects);
 
-            AsyncTaskCompat.executeParallel(scanTask, this.geofenceObjects);
+            AsyncTaskCompat.executeParallel(scanTask, this.geofenceObjects.values());
         }
         else ;// if my location is not changed, skip a timer loop (we don't start a scan task in this loop).
 
@@ -195,12 +193,14 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
 
 
 
-    protected void onGeofenceScanTaskFinished(TriggeredGeofenceableList<T> tgl) {
+    protected void onGeofenceScanTaskFinished(TriggeredGeofenceableContainer<T> tgc) {
         scanTask = null;
-        if(options.isAdvertiseOnEmptyList() || tgl.isAtLeastOneEntering()) listener.onGeofenceEntering(tgl.triggeredEnteringGeofences);
-        if(options.isAdvertiseOnEmptyList() || tgl.isAtLeastOneIn()   )    listener.onGeofenceIn(tgl.triggeredInGeofences   );
-        if(options.isAdvertiseOnEmptyList() || tgl.isAtLeastOneExiting() ) listener.onGeofenceExiting(tgl.triggeredExitingGeofences );
-        if(options.isAdvertiseOnEmptyList() || tgl.isAtLeastOneOut()  )    listener.onGeofenceOut(tgl.triggeredOutGeofences  );
+        listener.onGeofenceScanTask(tgc);
+//        if( tgc.isAtLeastOneEntering() ) listener.onGeofenceEntering(tgc.enteringSet);
+//        if( tgc.isAtLeastOneIn() )       listener.onGeofenceIn(tgc.inSet);
+//        if( tgc.isAtLeastOneExiting() )  listener.onGeofenceExiting(tgc.exitingSet);
+//        if( tgc.isAtLeastOneOut() )      listener.onGeofenceOut(tgc.outSet);
+
     }
 
 

@@ -25,7 +25,7 @@ import com.nagash.appwebbrowser.model.connection.AppBundleDownloader;
 import com.nagash.appwebbrowser.model.connection.CentralConnection;
 import com.nagash.appwebbrowser.controller.MainFragment;
 import com.nagash.appwebbrowser.controller.fragments.webapp.reactnative.ReactFragment;
-import com.nagash.appwebbrowser.model.webapp.FavoriteAppsManager;
+import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 
 import java.io.File;
@@ -53,10 +53,10 @@ public class WebAppContainerFragment
     AppBundleDownloader downloader = null;
 
     public WebAppContainerFragment() {
-        super(MainFragment.builder()
-                .setColor(R.color.colorWebAppPrimary)
-                .setColorDark(R.color.colorWebAppPrimaryDark)
-                .setTitle("WebApp Browser").build());
+        super();
+        setColorID(R.color.colorWebAppPrimary);
+        setColorDarkID(R.color.colorWebAppPrimaryDark);
+        setTitle("WebApp Browser");
 
         this.progressBarWebApp = null;
         this.textViewWebApp = null;
@@ -118,7 +118,7 @@ public class WebAppContainerFragment
         if(webApp != null )
             startApp();
 
-        this.favoriteAppsManager = new FavoriteAppsManager(this.getActivity());
+        this.favouriteAppsManager = FavouriteAppsManager.getInstance(this.getActivity());
         this.setHasOptionsMenu(true);
 
     }
@@ -229,7 +229,7 @@ public class WebAppContainerFragment
 
 
     // TODO:  RECOVERED
-    private FavoriteAppsManager favoriteAppsManager;
+    private FavouriteAppsManager favouriteAppsManager;
     public boolean favoriteToggle;
     public boolean isFullscreen;
 
@@ -251,8 +251,8 @@ public class WebAppContainerFragment
 
         if ((this.webApp != null) && (this.webApp.getId() != null))
         {
-            this.favoriteAppsManager.loadPreferences();
-            this.favoriteToggle = this.favoriteAppsManager.isFavorite(this.webApp);
+            this.favouriteAppsManager.loadPreferences();
+            this.favoriteToggle = this.favouriteAppsManager.isFavorite(this.webApp);
         }
 
     }
@@ -262,8 +262,8 @@ public class WebAppContainerFragment
 
         if ((this.webApp != null) && (this.webApp.getId() != null))
         {
-            this.favoriteAppsManager.setFavorite(this.webApp, this.favoriteToggle);
-            this.favoriteAppsManager.savePreferences();
+            this.favouriteAppsManager.setFavorite(this.webApp, this.favoriteToggle);
+            this.favouriteAppsManager.savePreferences();
         }
 
     }
