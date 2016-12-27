@@ -87,7 +87,6 @@ public class BeaconTestActivity extends AppCompatActivity implements EddystonePr
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        eddyScanner.destroyService();
     }
 
 

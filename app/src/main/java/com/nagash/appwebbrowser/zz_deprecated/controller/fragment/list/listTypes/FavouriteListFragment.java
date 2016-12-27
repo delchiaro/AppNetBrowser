@@ -11,7 +11,7 @@
 //import android.widget.ListView;
 //
 //import com.nagash.appwebbrowser.R;
-//import com.nagash.appwebbrowser.controller.fragments.WebAppListAdapter;
+//import com.nagash.appwebbrowser.zz_deprecated.controller.fragments.WebAppListAdapter;
 //import com.nagash.appwebbrowser.controller.fragments.list.AppListFragment;
 //import com.nagash.appwebbrowser.model.connection.CentralConnection;
 //import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;

@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/relative_layout_details"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:elevation="0dp"
+        android:minHeight="?attr/actionBarSize"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_width="match_parent"
+        android:padding="0dp">
+        <!--Per rimuovere il padding dopo il back button.. ma non funge.. -->
+        <!--app:contentInsetLeft="1dp"-->
+        <!--app:contentInsetRight="1dp"-->
+        <!--app:contentInsetStart="1dp"-->
+        <!--android:contentInsetLeft="1dp"-->
+        <!--android:contentInsetRight="1dp"-->
+        <!--android:contentInsetStart="1dp"-->
+        <!--android:layout_margin="0dp"-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/text_toolbar_title"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="left|center_vertical"-->
+            <!--android:layout_marginLeft="-5dp"-->
+            <!--android:text="@string/app_name"-->
+            <!--android:textColor="@android:color/white"-->
+            <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
+            <!--android:textStyle="bold"-->
+            <!--tools:text="Title" />-->
+
+    </android.support.v7.widget.Toolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <LinearLayout xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/card_view_app_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/tab_layout"
+                android:layout_gravity="center"
+                card_view:cardCornerRadius="4dp"
+                card_view:contentPadding="10dp"
+                android:layout_marginLeft="@dimen/descr_card_margin_horiz"
+                android:layout_marginRight="@dimen/descr_card_margin_horiz"
+                android:layout_marginTop="@dimen/descr_card_margin_vert"
+                android:layout_marginBottom="@dimen/descr_card_margin_vert">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/app_info_label"
+                        android:textAllCaps="false"
+                        android:textSize="@dimen/descr_title_text_size"
+                        android:textStyle="normal|bold"
+                        android:typeface="normal" />
+
+                    <TableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/tab_layout">
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_info_ID"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold"
+                                android:layout_width="wrap_content" />
+
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:id="@+id/etAppInfoID"
+                                android:enabled="false" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_info_name"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:id="@+id/etAppInfoName"
+                                android:enabled="false" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_info_version_name"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:text="Name"
+                                android:id="@+id/etAppInfoVersionName"
+                                android:enabled="false" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_info_version_code"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppInfoVersionCode"
+                                android:enabled="false" />
+                        </TableRow>
+
+
+                    </TableLayout>
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/card_view_app_localization"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/card_view_app_info"
+                android:layout_gravity="center"
+                card_view:cardCornerRadius="4dp"
+                card_view:contentPadding="10dp"
+                android:layout_marginLeft="@dimen/descr_card_margin_horiz"
+                android:layout_marginRight="@dimen/descr_card_margin_horiz"
+                android:layout_marginTop="@dimen/descr_card_margin_vert"
+                android:layout_marginBottom="@dimen/descr_card_margin_vert">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/app_gps_info_label"
+                        android:textAllCaps="false"
+                        android:textSize="@dimen/descr_title_text_size"
+                        android:textStyle="normal|bold"
+                        android:typeface="normal" />
+
+                    <TableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/tab_layout">
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_gps_info_lat"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppGpsLatitude"
+                                android:enabled="false" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_gps_info_lng"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppGpsLongitude"
+                                android:enabled="false" />
+                        </TableRow>
+
+                    </TableLayout>
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/card_view_app_beacon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/card_view_app_localization"
+                android:layout_gravity="center"
+                card_view:cardCornerRadius="4dp"
+                card_view:contentPadding="10dp"
+                android:layout_marginLeft="@dimen/descr_card_margin_horiz"
+                android:layout_marginRight="@dimen/descr_card_margin_horiz"
+                android:layout_marginTop="@dimen/descr_card_margin_vert"
+                android:layout_marginBottom="@dimen/descr_card_margin_vert">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/app_beacon_info_label"
+                        android:textAllCaps="false"
+                        android:textSize="@dimen/descr_title_text_size"
+                        android:textStyle="normal|bold"
+                        android:typeface="normal" />
+
+                    <TableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/tab_layout">
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_beacon_info_eddystone_UID_namespace"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppBeaconNamespace"
+                                android:enabled="false" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_beacon_info_eddystone_UID_instance"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppBeaconInstance"
+                                android:enabled="false" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_beacon_info_ibeacon_major"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppBeaconMajor"
+                                android:enabled="false"/>
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_beacon_info_ibeacon_minor"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppBeaconMinor"
+                                android:enabled="false" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingRight="@dimen/app_info_element_padding_right"
+                                android:text="@string/app_beacon_info_ibracon_UUID"
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold" />
+
+                            <EditText
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:inputType="textPersonName"
+                                android:text="Name"
+                                android:id="@+id/etAppBeaconUUID"
+                                android:enabled="false" />
+                        </TableRow>
+
+
+                    </TableLayout>
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

@@ -115,7 +115,7 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
     public void startScan(int frequency) {
         if(options.getScannerIntervalMode() == ScannerIntervalMode.timerBased)
         {
-            if (asyncTimer == null) {
+            if (asyncTimer == null || asyncTimer.isStopping() || asyncTimer.isStopped()) {
                 asyncTimer = new AsyncTimer(frequency);
                 asyncTimer.addListener(this);
                 AsyncTaskCompat.executeParallel(asyncTimer);

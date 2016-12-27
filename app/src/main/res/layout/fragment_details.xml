@@ -2,19 +2,27 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment_list_layout"
-    android:layout_width="match_parent"
-
-    android:layout_height="match_parent">
+    android:id="@+id/relative_layout_details"
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    android:padding="0.0dip">
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:id="@+id/scroll_view_details"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/toolbar"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true">
 
         <LinearLayout xmlns:card_view="http://schemas.android.com/apk/res-auto"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:id="@+id/linear_layout_details"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true">
 
 
             <android.support.v7.widget.CardView
@@ -26,7 +34,11 @@
                 android:layout_below="@+id/tab_layout"
                 android:layout_gravity="center"
                 card_view:cardCornerRadius="4dp"
-                card_view:contentPadding="10dp">
+                card_view:contentPadding="10dp"
+                android:layout_marginLeft="@dimen/descr_card_margin_horiz"
+                android:layout_marginRight="@dimen/descr_card_margin_horiz"
+                android:layout_marginTop="@dimen/descr_card_margin_vert"
+                android:layout_marginBottom="@dimen/descr_card_margin_vert">
 
 
                 <LinearLayout
@@ -40,7 +52,7 @@
                         android:fontFamily="sans-serif"
                         android:text="@string/app_info_label"
                         android:textAllCaps="false"
-                        android:textSize="22sp"
+                        android:textSize="@dimen/descr_title_text_size"
                         android:textStyle="normal|bold"
                         android:typeface="normal" />
 
@@ -54,21 +66,21 @@
                             android:layout_height="match_parent">
 
                             <TextView
-                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_info_ID"
-                                android:textSize="18sp"
-                                android:textStyle="normal|bold" />
+                                android:textSize="@dimen/descr_first_col_text_size"
+                                android:textStyle="normal|bold"
+                                android:layout_width="wrap_content" />
 
                             <EditText
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:textSize="18sp"
-                                android:id="@+id/etAppInfoID" />
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:id="@+id/etAppInfoID"
+                                android:enabled="false" />
                         </TableRow>
 
                         <TableRow
@@ -80,16 +92,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_info_name"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:id="@+id/etAppInfoName" />
+                                android:textSize="@dimen/descr_second_col_text_size"
+                                android:id="@+id/etAppInfoName"
+                                android:enabled="false" />
                         </TableRow>
 
                         <TableRow
@@ -101,16 +114,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_info_version_name"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
                                 android:inputType="textPersonName"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:text="Name"
-                                android:id="@+id/etAppInfoVersionName" />
+                                android:id="@+id/etAppInfoVersionName"
+                                android:enabled="false" />
                         </TableRow>
 
                         <TableRow
@@ -122,16 +136,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_info_version_code"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:id="@+id/etAppInfoVersionCode" />
+                                android:id="@+id/etAppInfoVersionCode"
+                                android:enabled="false" />
                         </TableRow>
 
 
@@ -148,9 +163,12 @@
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/card_view_app_info"
                 android:layout_gravity="center"
-                android:layout_marginTop="13dp"
                 card_view:cardCornerRadius="4dp"
-                card_view:contentPadding="10dp">
+                card_view:contentPadding="10dp"
+                android:layout_marginLeft="@dimen/descr_card_margin_horiz"
+                android:layout_marginRight="@dimen/descr_card_margin_horiz"
+                android:layout_marginTop="@dimen/descr_card_margin_vert"
+                android:layout_marginBottom="@dimen/descr_card_margin_vert">
 
 
                 <LinearLayout
@@ -164,7 +182,7 @@
                         android:fontFamily="sans-serif"
                         android:text="@string/app_gps_info_label"
                         android:textAllCaps="false"
-                        android:textSize="22sp"
+                        android:textSize="@dimen/descr_title_text_size"
                         android:textStyle="normal|bold"
                         android:typeface="normal" />
 
@@ -182,17 +200,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_gps_info_lat"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:textSize="18sp"
-                                android:id="@+id/etAppGpsLatitude" />
+                                android:id="@+id/etAppGpsLatitude"
+                                android:enabled="false" />
                         </TableRow>
 
                         <TableRow
@@ -204,16 +222,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_gps_info_lng"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:id="@+id/etAppGpsLongitude" />
+                                android:id="@+id/etAppGpsLongitude"
+                                android:enabled="false" />
                         </TableRow>
 
                     </TableLayout>
@@ -229,9 +248,12 @@
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/card_view_app_localization"
                 android:layout_gravity="center"
-                android:layout_marginTop="9dp"
                 card_view:cardCornerRadius="4dp"
-                card_view:contentPadding="10dp">
+                card_view:contentPadding="10dp"
+                android:layout_marginLeft="@dimen/descr_card_margin_horiz"
+                android:layout_marginRight="@dimen/descr_card_margin_horiz"
+                android:layout_marginTop="@dimen/descr_card_margin_vert"
+                android:layout_marginBottom="@dimen/descr_card_margin_vert">
 
 
                 <LinearLayout
@@ -245,7 +267,7 @@
                         android:fontFamily="sans-serif"
                         android:text="@string/app_beacon_info_label"
                         android:textAllCaps="false"
-                        android:textSize="22sp"
+                        android:textSize="@dimen/descr_title_text_size"
                         android:textStyle="normal|bold"
                         android:typeface="normal" />
 
@@ -263,17 +285,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_beacon_info_eddystone_UID_namespace"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:textSize="18sp"
-                                android:id="@+id/etAppBeaconNamespace" />
+                                android:id="@+id/etAppBeaconNamespace"
+                                android:enabled="false" />
                         </TableRow>
 
                         <TableRow
@@ -285,16 +307,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_beacon_info_eddystone_UID_instance"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:id="@+id/etAppBeaconInstance" />
+                                android:id="@+id/etAppBeaconInstance"
+                                android:enabled="false" />
                         </TableRow>
 
                         <TableRow
@@ -306,16 +329,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_beacon_info_ibeacon_major"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:id="@+id/etAppBeaconMajor" />
+                                android:id="@+id/etAppBeaconMajor"
+                                android:enabled="false"/>
                         </TableRow>
 
                         <TableRow
@@ -327,16 +351,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_beacon_info_ibeacon_minor"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:id="@+id/etAppBeaconMinor" />
+                                android:id="@+id/etAppBeaconMinor"
+                                android:enabled="false" />
                         </TableRow>
 
                         <TableRow
@@ -348,16 +373,17 @@
                                 android:layout_height="wrap_content"
                                 android:paddingRight="@dimen/app_info_element_padding_right"
                                 android:text="@string/app_beacon_info_ibracon_UUID"
-                                android:textSize="18sp"
+                                android:textSize="@dimen/descr_first_col_text_size"
                                 android:textStyle="normal|bold" />
 
                             <EditText
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:ems="10"
+                                android:textSize="@dimen/descr_second_col_text_size"
                                 android:inputType="textPersonName"
                                 android:text="Name"
-                                android:id="@+id/etAppBeaconUUID" />
+                                android:id="@+id/etAppBeaconUUID"
+                                android:enabled="false" />
                         </TableRow>
 
 

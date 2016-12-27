@@ -12,8 +12,6 @@ import java.util.Collection;
 public class GeofenceObject< G extends Geofenceable> implements Geofenceable
 {
     private G managedObject;
-    private final Location location;
-    private final int radius;
 
     private final GeoEvent registeredEvent;
 
@@ -29,13 +27,17 @@ public class GeofenceObject< G extends Geofenceable> implements Geofenceable
     private GeofenceObject(G managedObject, GeoEvent registeredEvent )
     {
         this.managedObject = managedObject;
-        this.location = managedObject.getLocation();
-        this.radius = managedObject.getProximityRadius();
         this.registeredEvent = registeredEvent;
     }
 
-    public Location getLocation() { return location; }
-    public int getProximityRadius() { return  radius; }
+    public Location getLocation() { return managedObject.getLocation(); }
+
+    @Override
+    public float distanceTo(Location location) {
+        return managedObject.distanceTo(location);
+    }
+
+    public int getProximityRadius() { return  managedObject.getProximityRadius(); }
     public GeoEvent getRegisteredEvent() { return registeredEvent; }
 
     public GeoEvent getTriggeredEvent() { return triggeredEvent; }

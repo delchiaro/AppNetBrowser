@@ -28,7 +28,8 @@
         android:layout_below="@+id/toolbar"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/bottomBar">
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="55dp">
 
 
     </RelativeLayout>
@@ -36,13 +37,13 @@
     <com.roughike.bottombar.BottomBar
         android:id="@+id/bottomBar"
         android:layout_width="wrap_content"
-        android:layout_height="60dp"
         app:bb_activeTabAlpha="1"
         app:bb_inActiveTabAlpha="1"
         app:bb_activeTabColor="#EEEEEE"
         app:bb_inActiveTabColor="#444444"
         app:bb_tabXmlResource="@xml/bottombar_tabs"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_height="60dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_proximity"

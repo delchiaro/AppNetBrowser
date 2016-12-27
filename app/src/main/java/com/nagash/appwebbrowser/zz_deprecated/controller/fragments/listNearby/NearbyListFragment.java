@@ -1,8 +1,7 @@
-//package com.nagash.appwebbrowser.controller.fragments.list.listTypes;
+//package com.nagash.appwebbrowser.zz_deprecated.controller.fragments.listNearby;
 //
 //import android.os.Bundle;
 //import android.support.annotation.Nullable;
-//import android.support.v4.app.Fragment;
 //import android.view.LayoutInflater;
 //import android.view.MenuItem;
 //import android.view.View;
@@ -14,8 +13,8 @@
 //import android.widget.TextView;
 //
 //import com.nagash.appwebbrowser.R;
+//import com.nagash.appwebbrowser.controller.MainFragment;
 //import com.nagash.appwebbrowser.zz_deprecated.controller.fragments.WebAppListAdapter;
-//import com.nagash.appwebbrowser.controller.fragments.list.AppListFragment;
 //import com.nagash.appwebbrowser.model.connection.CentralConnection;
 //import com.nagash.appwebbrowser.model.webapp.WebApp;
 //
@@ -24,11 +23,10 @@
 ///**
 // * Created by nagash on 15/09/16.
 // */
-//public class NearbyListFragment extends Fragment
+//public class NearbyListFragment extends MainFragment
 //{
 //
 //
-//    private AppListFragment appListFragment;
 //
 //    // Views for Loading:
 //    ProgressBar progressBarLinkServer = null;
@@ -39,15 +37,19 @@
 //
 //
 //
-//
-//    public NearbyListFragment(AppListFragment appListFragment) {
-//        this.appListFragment = appListFragment;
-//    }
-//
 //    enum State { LOADING, CANT_CONNECT, CONNECTED }
 //
 //    State state = State.LOADING;
 //
+//
+//    private static final int ACTIONBAR_TITLE_ID = R.string.nearby_fragment_actionbar_title;
+//
+//    public NearbyListFragment() {
+//        super();
+//        setColorID(R.color.colorNearbyPrimary);
+//        setColorDarkID(R.color.colorNearbyPrimaryDark);
+//        setTitle(ACTIONBAR_TITLE_ID);
+//    }
 //
 //
 //    public void setStatusLoading() {
@@ -80,9 +82,9 @@
 //
 //    private void refreshState() {
 //        switch(state){
-//            case LOADING:       setStatusLoading(); break;
-//            case CANT_CONNECT:  setStatusCantConnect();  break;
-//            case CONNECTED:     setStatusConneted();     break;
+//            case LOADING:       setStatusLoading();         break;
+//            case CANT_CONNECT:  setStatusCantConnect();     break;
+//            case CONNECTED:     setStatusConneted();        break;
 //        }
 //    }
 //
@@ -105,7 +107,7 @@
 //        tvConnectionStatus    = (TextView)   getActivity().findViewById(R.id.tvAppList);
 //        listView              = (ListView)   getActivity().findViewById(R.id.app_listView);
 //        fragmentListLayout    =              getActivity().findViewById(R.id.fragment_list_layout);
-//        btnConnect.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { appListFragment.getMainActivity().retryConnection();}  });
+//        btnConnect.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { getMainActivity().retryConnection();}  });
 //        refreshState();
 //
 //        //listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
@@ -129,7 +131,7 @@
 //        if(appList != null && appList.isEmpty() == false)
 //        {
 //            // Create the adapter to convert the array to views
-//            WebAppListAdapter adapter = new WebAppListAdapter(appListFragment.getMainActivity(), appList);
+//            WebAppListAdapter adapter = new WebAppListAdapter(getMainActivity(), appList);
 //
 //            // Attach the adapter to a ListView
 //            listView.setAdapter(adapter);
@@ -138,7 +140,7 @@
 //                @Override
 //                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 //                   // Snackbar.make(fragmentListLayout, "Item Selected!", Snackbar.LENGTH_LONG).show();
-//                    appListFragment.getMainActivity().showAppDetails(appList.get(i));
+//                    getMainActivity().showAppDetails(appList.get(i));
 //                }
 //            });
 //
@@ -147,7 +149,7 @@
 //                @Override
 //                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 //                    //Snackbar.make(fragmentListLayout, "Item Selected!", Snackbar.LENGTH_LONG).show();
-//                    appListFragment.getMainActivity().showAppDetails(appList.get(i));
+//                    getMainActivity().showAppDetails(appList.get(i));
 //                }
 //
 //                @Override
@@ -159,6 +161,19 @@
 //
 //    }
 //
+//
+//
+//
+//
+//
+//    // * * * * * DOWNLOAD SERVER * * * * *
+//    public void onAppsDownloaded() {
+//        setStatusConneted();
+////        favouriteListFragment.updateAppList();
+//    }
+//    public void onServerNotAvailable() {
+//        setStatusCantConnect();
+//    }
 //
 //
 //

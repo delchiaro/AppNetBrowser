@@ -2,13 +2,18 @@ package com.nagash.appwebbrowser.controller.fragments.details;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.MainFragment;
@@ -24,6 +29,10 @@ public class WebAppDetailsFragment extends MainFragment {
     private WebApp webApp = null;
     private boolean favoriteToggle = false;
     private final FavouriteAppsManager favouriteAppsManager;
+
+    private RelativeLayout relativeLayoutMain = null;
+    private ScrollView scrollView = null;
+    private LinearLayout linearLayout = null;
 
     public WebAppDetailsFragment() {
         super();
@@ -92,32 +101,97 @@ public class WebAppDetailsFragment extends MainFragment {
 
 
 
-    @Override public void onFragmentShown() {
-        super.onFragmentShown();
-        getMainActivity().showBackButton();
-        loadFavorite();
-        getMainActivity().getBottomBar().setVisibility(View.INVISIBLE);
-
-    }
-    @Override public void onFragmentHidden() {
-        super.onFragmentHidden();
-        getMainActivity().hideBackButton();
-        getMainActivity().getBottomBar().setVisibility(View.VISIBLE);
 
 
-    }
+
 
 
 
     @Override   public View  onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_list_details, container, false);
+        View view = inflater.inflate(R.layout.fragment_details, container, false);
         setHasOptionsMenu(true);
         return view;
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
     @Override   public void  onActivityCreated (@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         updateView();
+        relativeLayoutMain = (RelativeLayout) getActivity().findViewById(R.id.relative_layout_details);
+        scrollView = (ScrollView) getActivity().findViewById(R.id.scroll_view_details);
+        linearLayout = (LinearLayout) getActivity().findViewById(R.id.linear_layout_details);
+
+    }
+
+
+    @Override public void onFragmentShown() {
+        super.onFragmentShown();
+        getMainActivity().showBackButton();
+        loadFavorite();
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        hideBottomBar();
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        showBottomBar();
+    }
+
+    @Override public void onFragmentHidden() {
+        super.onFragmentHidden();
+        getMainActivity().hideBackButton();
+    }
+
+
+
+
+
+
+
+
+
+
+    private int bottomBackup = -1;
+    private void hideBottomBar() {
+        if(bottomBackup == -1) {
+            bottomBackup = relativeLayoutMain.getBottom();
+            DisplayMetrics dm = new DisplayMetrics();
+            ((WindowManager)getActivity().getSystemService("window")).getDefaultDisplay().getMetrics(dm);
+            int i = dm.heightPixels;
+            getMainActivity().hideBottomBar();
+            relativeLayoutMain.setBottom(i);
+            scrollView.setBottom(i);
+            linearLayout.setBottom(i);
+            relativeLayoutMain.requestLayout();
+            relativeLayoutMain.refreshDrawableState();
+            scrollView.requestLayout();
+            scrollView.refreshDrawableState();
+            linearLayout.requestLayout();
+            linearLayout.refreshDrawableState();
+
+        }
+        else return;
+    }
+    private void showBottomBar() {
+        if(bottomBackup > -1) {
+            getMainActivity().hideBottomBar();
+            this.bottomBackup = relativeLayoutMain.getBottom();
+            relativeLayoutMain.setBottom(bottomBackup);
+            scrollView.setBottom(bottomBackup);
+            linearLayout.setBottom(bottomBackup);
+            bottomBackup = -1;
+        }
+        else return;
     }
 
 
@@ -141,6 +215,11 @@ public class WebAppDetailsFragment extends MainFragment {
         }
         return false;
     }
+
+
+
+
+
 
     private void updateFavoriteIcon() {
         if(favoriteMenuItem != null)

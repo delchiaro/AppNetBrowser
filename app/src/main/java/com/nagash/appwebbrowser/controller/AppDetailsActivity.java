@@ -4,7 +4,9 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,11 +14,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.fragments.details.WebAppDetailsFragment;
 import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
+
+import static com.nagash.appwebbrowser.R.id.textView;
 
 /**
  * Created by nagash on 16/12/16.
@@ -24,10 +29,13 @@ import com.nagash.appwebbrowser.model.webapp.WebApp;
 
 public class AppDetailsActivity extends AppCompatActivity {
 
+    public static final String INTENT_EXTRA_WEBAPP_KEY = "webApp";
     private WebApp webApp = null;
     private boolean favoriteToggle = false;
     private FavouriteAppsManager favouriteAppsManager;
 
+    private Toolbar toolbar = null;
+    TextView tvToolbarTitle = null;
 //    public WebAppDetailsFragment() {
 //        super();
 //        setBackButton(MainFragment.BackButton.VISIBLE);
@@ -43,15 +51,31 @@ public class AppDetailsActivity extends AppCompatActivity {
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_list_details);
+        setContentView(R.layout.activity_details);
+        webApp = getIntent().getExtras().getParcelable(INTENT_EXTRA_WEBAPP_KEY);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+       // tvToolbarTitle = (TextView) findViewById(R.id.text_toolbar_title);
+
+        favouriteAppsManager = FavouriteAppsManager.getInstance(this);
+
+        setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
+
+        //tvToolbarTitle.setText(webApp.getName());
+        setTitle(webApp.getName());
+        toolbar.setTitle(webApp.getName());
+
+        loadFavorite();
+        updateView();
     }
     @Override protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
     }
     @Override protected void onStart() {
+        super.onStart();
     }
     @Override protected void onStop() {
         super.onStop();
@@ -67,12 +91,12 @@ public class AppDetailsActivity extends AppCompatActivity {
 
 
 
-
-    public AppDetailsActivity setWebApp(WebApp webApp) {
-        this.webApp = webApp;
-        updateView();
-        return this;
-    }
+//
+//    public AppDetailsActivity setWebApp(WebApp webApp) {
+//        this.webApp = webApp;
+//        updateView();
+//        return this;
+//    }
 
 
     public void updateView() {
@@ -107,15 +131,12 @@ public class AppDetailsActivity extends AppCompatActivity {
             etEddyNamespace.setText(webApp.getUID_namespace());
             etEddyInstance.setText(webApp.getUID_instance());
 
-            setTitle(webApp.getName());
-            // TODO: getToolbar().setTitle(title);
-            loadFavorite();
+
 
 
 
         }
     }
-
 
 
 
@@ -137,8 +158,13 @@ public class AppDetailsActivity extends AppCompatActivity {
                 updateFavoriteIcon();
                 saveFavorite();
                 break;
+            case android.R.id.home:
+                finish();
+                return true;
         }
-        return false;
+        return super.onOptionsItemSelected(item);
+
+        //return false;
     }
 
     private void updateFavoriteIcon() {

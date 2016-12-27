@@ -1,9 +1,13 @@
-package com.nagash.appwebbrowser.controller.fragments.listNearby;
+package com.nagash.appwebbrowser.controller.fragments.list;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +16,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.nagash.appwebbrowser.R;
+import com.nagash.appwebbrowser.controller.AppDetailsActivity;
+import com.nagash.appwebbrowser.controller.BeaconTestActivity;
 import com.nagash.appwebbrowser.controller.MainFragment;
+import com.nagash.appwebbrowser.controller.fragments.list.AppListCard;
+import com.nagash.appwebbrowser.controller.webAppController.WebAppController;
+import com.nagash.appwebbrowser.controller.webAppController.WebAppListener;
 import com.nagash.appwebbrowser.model.localization.LocationManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 
 import it.gmariotti.cardslib.library.view.CardViewNative;
@@ -23,7 +37,7 @@ import it.gmariotti.cardslib.library.view.CardViewNative;
 /**
  * Created by nagash on 15/09/16.
  */
-public class NearbyListFragment2 extends MainFragment
+public class NearbyListFragment2 extends MainFragment implements WebAppListener
 {
 
 
@@ -38,6 +52,7 @@ public class NearbyListFragment2 extends MainFragment
     CardViewNative proxyCardView = null;
     AppListCard nearbyAppListCard = null;
     AppListCard proxyAppListCard = null;
+
 
 
 
@@ -93,6 +108,25 @@ public class NearbyListFragment2 extends MainFragment
     }
 
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_nearby, menu);
+        MenuItem menuItemBeaconTest =  menu.findItem(R.id.start_beacon_test);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case R.id.start_beacon_test:
+                Intent intent = new Intent(getActivity(), BeaconTestActivity.class);
+                getActivity().startActivity(intent);
+                break;
+        }
+        return false;
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -144,26 +178,47 @@ public class NearbyListFragment2 extends MainFragment
         refreshState();
 
         //listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-
+        setHasOptionsMenu(true);
     }
+
+
+
+
 
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return false;
+    public    void onWebAppUpdate(@NonNull Collection<WebApp> beaconApps,@NonNull Collection<WebApp> proximityApps ,@NonNull Collection<WebApp> nearbyApps) {
+
+        Location currentLocation = getMainActivity().getLocationManager().getCurrentLocation();
+
+        LinkedList proxyAndBeaconList = new LinkedList();// todo
+
+
+        for(WebApp app : beaconApps)
+            proxyAndBeaconList.add(app);
+
+        for(WebApp app  : proximityApps)
+             proxyAndBeaconList.addLast(app);
+//
+//
+//        if(nearbyNotProxy != null && proxyNotBeacon != null)
+//            for(WebApp  app: nearbyNotProxy)
+//                if(proxyNotBeacon.contains(app) == false)
+//                    proxyAndBeaconList.addLast(app);
+
+
+        updateNarbyApps(nearbyApps, currentLocation);
+        updateProxyApps(proxyAndBeaconList, currentLocation);
     }
 
-
-
-    public void updateNarbyApps(SortedSet<WebApp> nearby, Location myLocation) {
+    public void updateNarbyApps(Collection<WebApp> nearby, Location myLocation) {
         nearbyAppListCard.updateItems(nearby, myLocation);
-        proxyAppListCard.updateProgressBar(true,true);
         nearbyAppListCard.updateProgressBar(true,true);
-
     }
 
-    public void updateProxyApps(SortedSet<WebApp> proxy, Location myLocation) {
+    public void updateProxyApps(Collection<WebApp> proxy, Location myLocation) {
         proxyAppListCard.updateItems(proxy, myLocation);
+        proxyAppListCard.updateProgressBar(true,true);
     }
 
 
@@ -175,10 +230,6 @@ public class NearbyListFragment2 extends MainFragment
     public void onServerNotAvailable() {
         setStatusCantConnect();
     }
-
-
-
-
 
 
 }

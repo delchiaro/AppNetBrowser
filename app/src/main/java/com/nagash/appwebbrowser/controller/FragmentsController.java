@@ -4,14 +4,12 @@ import android.content.Intent;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.fragments.details.WebAppDetailsFragment;
-import com.nagash.appwebbrowser.controller.fragments.listFavourites.FavouriteListFragment2;
-import com.nagash.appwebbrowser.controller.fragments.listNearby.NearbyListFragment;
-import com.nagash.appwebbrowser.controller.fragments.listFavourites.FavouriteListFragment;
-import com.nagash.appwebbrowser.controller.fragments.listNearby.NearbyListFragment2;
+import com.nagash.appwebbrowser.controller.fragments.list.FavouriteListFragment2;
+import com.nagash.appwebbrowser.controller.fragments.list.NearbyListFragment2;
 import com.nagash.appwebbrowser.controller.fragments.map.WebAppMapFragment;
 import com.nagash.appwebbrowser.controller.fragments.webapp.WebAppContainerFragment;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
-import com.nagash.appwebbrowser.utils.fragmentHelper.FragmentHelper;
+import com.nagash.appwebbrowser.controller.fragmentHelper.FragmentHelper;
 
 /**
  * Created by nagash on 06/10/16.
@@ -21,6 +19,7 @@ public class FragmentsController
 {
     MainActivity main;
     MainMode     mainMode = MainMode.NONE;
+    MainMode     oldMainMode =  MainMode.NONE;
 
     FragmentHelper<MainFragment> fragmentHelper;
 
@@ -62,8 +61,24 @@ public class FragmentsController
         if( closeAppDetails() )
             return true;
             // let the active MainFragment manage the event (default behaviour: return false - not handle the event).
-        else if(getActiveFragment()!=null) return getActiveFragment().onBackPressed();
-
+        else if(getActiveFragment()!=null)
+        {
+            if(  getActiveFragment().onBackPressed() )
+                return true;
+            else if(mainMode == MainMode.WEBAPP) {
+                MainMode backMode = oldMainMode;
+                oldMainMode = MainMode.NEARBY;
+                main.activateMode(backMode);
+                return true;
+            }
+            else if(mainMode != MainMode.NEARBY)
+            {
+                oldMainMode = mainMode.NEARBY;
+                main.activateMode(MainMode.NEARBY);
+                return true;
+            }
+            else return false;
+        }
         else return false;
     }
 
@@ -114,8 +129,13 @@ public class FragmentsController
 //            fragmentHelper.activateFragment(detailsFragment);
 //        }
 
+
+//        WebAppDetailsFragment appDetailsFragment = new WebAppDetailsFragment().setParentFragmentStyle(getActiveFragment());
+//        fragmentHelper.activateFragment(appDetailsFragment);
+
+
         Intent intent = new Intent(main, AppDetailsActivity.class);
-        intent.putExtra("WebApp", webApp);
+        intent.putExtra(AppDetailsActivity.INTENT_EXTRA_WEBAPP_KEY, webApp);
         main.startActivity(intent);
     }
     public boolean closeAppDetails() {
@@ -160,6 +180,7 @@ public class FragmentsController
 
     public void changeMode(MainMode mode) {
         if(mode == mainMode) return;
+        oldMainMode = mainMode;
         switch(mode)
         {
             case NONE: break;
@@ -199,6 +220,7 @@ public class FragmentsController
         mainMode = mode;
         main.updateFabVisibility();
     }
+
 
 //
 //    public boolean onOptionsItemSelected(MenuItem item) {

@@ -7,6 +7,12 @@ import android.location.Location;
  */
 public interface Localizable {
 
-    public Location getLocation();
+    Location getLocation();
+    float distanceTo(Location myLocation);
+
+    // to use default methods we need min api 16 :(
+//    default float distanceTo(Location location) {
+//        return getLocation().distanceTo(location);
+//    }
 
 }

@@ -1,9 +1,9 @@
-package com.nagash.appwebbrowser.utils.fragmentHelper;
+package com.nagash.appwebbrowser.controller.fragmentHelper;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 
-import com.nagash.appwebbrowser.utils.fragmentHelper.Exceptions.RemovedNotAddedFragmentException;
+import com.nagash.appwebbrowser.controller.fragmentHelper.Exceptions.RemovedNotAddedFragmentException;
 
 import java.util.HashSet;
 import java.util.Set;

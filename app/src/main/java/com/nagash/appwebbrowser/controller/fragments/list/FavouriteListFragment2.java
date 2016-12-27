@@ -1,4 +1,4 @@
-package com.nagash.appwebbrowser.controller.fragments.listFavourites;
+package com.nagash.appwebbrowser.controller.fragments.list;
 
 import android.location.Location;
 import android.os.Bundle;
@@ -10,7 +10,7 @@ import android.widget.ListView;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.MainFragment;
-import com.nagash.appwebbrowser.controller.fragments.listNearby.AppListCard;
+import com.nagash.appwebbrowser.controller.fragments.list.AppListCard;
 import com.nagash.appwebbrowser.model.connection.CentralConnection;
 import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;

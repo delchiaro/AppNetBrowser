@@ -1,4 +1,4 @@
-package com.nagash.appwebbrowser.controller.fragments.listNearby;
+package com.nagash.appwebbrowser.controller.fragments.list;
 
 
 import android.content.Context;
@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
@@ -128,6 +127,10 @@ import it.gmariotti.cardslib.library.prototypes.LinearListView;
             tvAppName.setText(appObject.appName);
             if(appObject.distance != null)
                 tvAppDistance.setText(appObject.distance + appObject.distanceUnit);
+            else if(appObject.distanceUnit.equals("Beacon!"))
+            {
+                tvAppDistance.setText(appObject.distanceUnit);
+            }
             else
                 tvAppDistance.setVisibility(View.INVISIBLE);
 
@@ -147,6 +150,7 @@ import it.gmariotti.cardslib.library.prototypes.LinearListView;
 
 
     public void updateItems(Collection<WebApp> appList, Location myLocation) {
+        if(appList == null) return;
         ArrayList<AppObject> objs = new ArrayList<AppObject>();
 
         for( WebApp app : appList)
@@ -193,8 +197,13 @@ import it.gmariotti.cardslib.library.prototypes.LinearListView;
                 this.appName = app.getName();
                 appIcon = R.drawable.ic_cast_play_24dp;
 
-                if(myLocation != null) {
-                    float distance = this.app.getLocation().distanceTo(myLocation);
+                if(app.isUserNearBeacon())
+                {
+                    distance = null;
+                    distanceUnit = "Beacon!";
+                }
+                else if(myLocation != null) {
+                    float distance = this.app.distanceTo(myLocation);
 
                     int decimals = 0;
                     if (distance >= 1000) {
@@ -204,6 +213,7 @@ import it.gmariotti.cardslib.library.prototypes.LinearListView;
                         if (distance < 100)
                             decimals = 1;
                     }
+                    else distanceUnit = "m";
                     this.distance = new BigDecimal(distance).setScale(decimals, BigDecimal.ROUND_HALF_UP);
                 }
                 else

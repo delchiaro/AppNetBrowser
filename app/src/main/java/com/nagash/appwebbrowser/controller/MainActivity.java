@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -51,6 +52,9 @@ import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabReselectListener;
 import com.roughike.bottombar.OnTabSelectListener;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -66,10 +70,7 @@ public class MainActivity
         implements
         DefaultHardwareBackBtnHandler,
         AppListDownloadHandler,
-        LocationEventListener,
-        EddystoneProximityListener,
-        EddystoneScannerListener,
-        WebAppListener
+        LocationEventListener
 {
 
     private static MainActivity mainActivity = null;
@@ -100,6 +101,7 @@ public class MainActivity
 
     private RelativeLayout mainFragmentContainer;
     private RelativeLayout mainLayout;
+
 
 
 
@@ -190,24 +192,7 @@ public class MainActivity
 
     }
 
-
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0  && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    locationManager.onLocationPermissionsReceived();
-                }
-                else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
+    public LocationManager getLocationManager() { return locationManager; }
 
 
 
@@ -241,7 +226,7 @@ public class MainActivity
 
 
 
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    /* * * * *  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * APPLIST DOWNLOADER  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     @Override
@@ -292,20 +277,13 @@ public class MainActivity
 
     private void initWebAppController() {
         webAppController = new WebAppController(locationManager);
-        webAppController.setOnUpdateListener(this);
+        webAppController.setOnUpdateListener(fragCtrl.getNearbyListFragment());
     }
     private void startWebAppController(List<WebApp> downloadedApps) {
         if(downloadedApps != null)
             webAppController.start(downloadedApps, this);
     }
 
-
-    @Override
-    public void onWebAppUpdate(SortedSet<WebApp> proxyApps, SortedSet<WebApp> nearbyApps) {
-        SortedSet<WebApp> newNearbyAppsNotProxy = WebAppController.getNearbyNotInProximity(proxyApps, nearbyApps);
-        fragCtrl.getNearbyListFragment().updateNarbyApps(newNearbyAppsNotProxy, locationManager.getCurrentLocation());
-        fragCtrl.getNearbyListFragment().updateProxyApps(proxyApps, locationManager.getCurrentLocation());
-    }
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -423,31 +401,42 @@ public class MainActivity
 //        registerReceiver(broadcastReceiver, filter);
     }
 
+    public void activateMode(MainMode mode) {
+        switch (mode)
+        {
+            case NEARBY:
+                bottomBar.selectTabWithId(R.id.tab_list);
+                break;
+            case FAVOURITES:
+                bottomBar.selectTabWithId(R.id.tab_favourites);
+                break;
+            case MAP:
+                bottomBar.selectTabWithId(R.id.tab_map);
+                break;
+            case WEBAPP:
+                bottomBar.selectTabWithId(R.id.tab_webapp);
+                break;
+        }
+    }
+
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * MANAGE ACTIVITY LIFECYCLE * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         initContentView();
         locationManager.setHighAccuracy();
         locationManager.onCreate(savedInstanceState);
-        initEddy();
+        // initEddy();
         initWebAppController();
 
         MainActivity.setMainActivity(this);
         try{ connectToLinkServer(); }
         catch (CentralConnection.DoubleConnectionException e) { e.printStackTrace(); }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.System.canWrite(this)) {
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE}, 2909);
-            } else {
-                // continue with your code
-            }
-        } else {
-            // continue with your code
-        }
+
 
     }
     @Override protected void onSaveInstanceState(Bundle outState) {
@@ -457,12 +446,10 @@ public class MainActivity
     @Override protected void onStart() {
         super.onStart();
         locationManager.onStart();
-        eddyScanner.startScan();
     }
     @Override protected void onStop() {
         super.onStop();
         locationManager.onStop();
-        eddyScanner.stopScan();
     }
     @Override protected void onResume() {    // Same as onPause - need to call onHostResume on our ReactInstanceManager
         super.onResume();
@@ -504,52 +491,111 @@ public class MainActivity
         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     int statusBarHeight = 0;
-
     int topBackup = 0;
     int bottomBackup = 0;
+    boolean bottomBarHidden = false;
+    boolean toolbarHidden = false;
+    public void hideBottomBar() {
+        if(bottomBarHidden) return;
+        getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
+        int deviceHeight = displayMetrics.heightPixels;
+        bottomBackup = mainFragmentContainer.getBottom();
+        mainFragmentContainer.setBottom(deviceHeight);
+        mainFragmentContainer.invalidate();
+        mainFragmentContainer.refreshDrawableState();
+
+        bottomBarHidden = true;
+    }
+    public void showBottomBar() {
+        if(!bottomBarHidden) return;
+        getBottomBar().animate().translationY(0).setDuration(600).start();
+        mainFragmentContainer.setTop(topBackup);
+        mainFragmentContainer.setBottom(bottomBackup);
+        mainFragmentContainer.requestLayout();
+        bottomBarHidden = false;
+    }
+
+    public void hideToolbar() {
+        if(toolbarHidden)return;
+        getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
+        topBackup = mainFragmentContainer.getTop();
+        mainFragmentContainer.setTop(0);
+        mainFragmentContainer.requestLayout();
+        toolbarHidden = true;
+    }
+    public void showToolbar() {
+        if(!toolbarHidden) return;
+        hideFullscreenNotification();
+        getToolbar().animate().translationY(0+statusBarHeight).setDuration(600).start();
+        mainFragmentContainer.setTop(topBackup);
+        mainFragmentContainer.invalidate();
+        toolbarHidden = false;
+    }
+
     public void setFullScreen(boolean on) {
         if(fullScreen && on || !fullScreen && !on) return;
         if(!fullScreen && on) { // ENTERING FULLSCREEN
-            //.setSystemUiVisibility(flags);
-//            Rect rectangle = new Rect();
-//            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
-//            statusBarHeight = rectangle.top;
-
             showFullscreenNotification();
-            getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
-            getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
-
-
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-            windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
-            int deviceWidth = displayMetrics.widthPixels;
-            int deviceHeight = displayMetrics.heightPixels;
-
-//            Rect rectangle = new Rect();
-//            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
-//            statusBarHeight = rectangle.top;
-            topBackup = mainFragmentContainer.getTop();
-            bottomBackup = mainFragmentContainer.getBottom();
-            mainFragmentContainer.setTop(0);
-            mainFragmentContainer.setBottom(deviceHeight);
-            mainFragmentContainer.invalidate();
-//            getWindow().addFlags(flags);
+            hideBottomBar();
+            hideToolbar();
             fullScreen = true;
         }
         else if(fullScreen && !on) { // EXITING FULLSCREEN
             hideFullscreenNotification();
-            getToolbar().animate().translationY(0+statusBarHeight).setDuration(600).start();
-            getBottomBar().animate().translationY(0).setDuration(600).start();
-            mainFragmentContainer.setTop(topBackup);
-            mainFragmentContainer.setBottom(bottomBackup);
-            mainFragmentContainer.invalidate();
-//            getWindow().clearFlags(flags);
+            showBottomBar();
+            showToolbar();
             fullScreen = false;
         }
-
-
     }
+
+//    public void setFullScreen(boolean on) {
+//        if(fullScreen && on || !fullScreen && !on) return;
+//        if(!fullScreen && on) { // ENTERING FULLSCREEN
+//            //.setSystemUiVisibility(flags);
+////            Rect rectangle = new Rect();
+////            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+////            statusBarHeight = rectangle.top;
+//
+//            showFullscreenNotification();
+//            getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
+//            getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
+//
+//
+//            DisplayMetrics displayMetrics = new DisplayMetrics();
+//            WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+//            windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
+//            int deviceWidth = displayMetrics.widthPixels;
+//            int deviceHeight = displayMetrics.heightPixels;
+//
+////            Rect rectangle = new Rect();
+////            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+////            statusBarHeight = rectangle.top;
+//            topBackup = mainFragmentContainer.getTop();
+//            bottomBackup = mainFragmentContainer.getBottom();
+//            mainFragmentContainer.setTop(0);
+//            mainFragmentContainer.setBottom(deviceHeight);
+//            mainFragmentContainer.invalidate();
+////            getWindow().addFlags(flags);
+//            fullScreen = true;
+//        }
+//        else if(fullScreen && !on) { // EXITING FULLSCREEN
+//            hideFullscreenNotification();
+//            getToolbar().animate().translationY(0+statusBarHeight).setDuration(600).start();
+//            getBottomBar().animate().translationY(0).setDuration(600).start();
+//            mainFragmentContainer.setTop(topBackup);
+//            mainFragmentContainer.setBottom(bottomBackup);
+//            mainFragmentContainer.invalidate();
+////            getWindow().clearFlags(flags);
+//            fullScreen = false;
+//        }
+//    }
+
     private void hideFullscreenNotification() {
 //        if(mNotificationManager != null)
 //            mNotificationManager.cancel(FULLSCREEN_NOTIFICATION_ID);
@@ -663,74 +709,6 @@ public class MainActivity
 
 
 
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * * * * * * * * * * * * * * *   BEACON MANAGEMENT   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-    EddystoneProximityManager eddyProximity;
-    EddystoneScanner eddyScanner;
-
-    private void initEddy() {
-        eddyScanner = EddystoneScanner.getInstance(this);
-        eddyScanner.getEventSettings() .eventLostConnection(true) .eventNewConnection(true);
-        eddyScanner.addProximityListener(this);
-
-        EddystoneProximityManager.Settings proxySettings = new EddystoneProximityManager.Settings()
-                .advertiseConnectedOutProximity(true)
-                .advertiseInProximity(true)
-                .advertiseLostProximity(true)
-                .advertiseNewProximity(true)
-                .advertiseOnEmptyList(true);
-
-        eddyProximity = new EddystoneProximityManager(eddyScanner, proxySettings);
-        eddyProximity.addListener(this);
-        eddyProximity.setProximityDistance(0.3);
-    }
-    @Override public void onNewBeaconProximity(Set<Eddystone> newProxyBeacons) {
-        Log.i("BeaconTestActivity", "Nuovi beacon vicini: " + newProxyBeacons.size());
-        //Snackbar.make(beaconLayout, "Nuovo beacon vicino!", 300).show();
-    }
-
-    @Override public void onLostBeaconProximity(Set<Eddystone> newFarBeacons) {
-        Log.i("BeaconTestActivity", "Beacon allontanati: " + newFarBeacons.size());
-        //Snackbar.make(beaconLayout, "Beacon perso", 300).show();;
-    }
-
-    @Override public void onBeaconProximity(Set<Eddystone> proxyBeacons) {
-
-        if(proxyBeacons == null) Log.i("BeaconTestActivity", "Nessun beacon vicino");
-        else Log.i("BeaconTestActivity", "Beacon vicini: " + proxyBeacons.size());
-        //Snackbar.make(beaconLayout, "Beacon vicino!", 300).show();
-    }
-
-    @Override public void onBeaconNotInProximity(Set<Eddystone> farBeacons) {
-        Log.i("BeaconTestActivity", "Beacon lontani: " + farBeacons.size());
-        /// Snackbar.make(beaconLayout, "Nessun beacon vicino", 300).show();;
-    }
-
-
-    @Override public void onNewConnectedBeacons(Set<Eddystone> newBeacons) {
-        Log.i("BeaconTestActivity", "Nuovi beacon connessi: " + newBeacons.size());
-        //Snackbar.make(beaconLayout, "Nuovo beacon connesso!", 700).show();;
-    }
-
-    @Override public void onLostConnectedBeacons(Set<Eddystone> lostBeacons) {
-        Log.i("BeaconTestActivity", "Beacon disconnessi: " + lostBeacons.size());
-        // Snackbar.make(beaconLayout, "Beacon disconnesso", 700).show();;
-    }
-
-    @Override public void onScanBeacons(List<Eddystone> scannedBeacons) {
-        if(scannedBeacons == null) {
-            Log.i("BeaconTestActivity", "Nessun beacon connesso");
-            // Snackbar.make(beaconLayout, "Nessun beacon connesso", 700).show();;
-        }
-        else        {
-            Log.i("BeaconTestActivity", "Beacon connessi: " + scannedBeacons.size());
-            //   Snackbar.make(beaconLayout, "Beacon connesso!", 700).show();
-        }
-    }
-
-
-
 
 
 
@@ -742,4 +720,7 @@ public class MainActivity
     private float pxFromDp(float dp) {
         return dp * getResources().getDisplayMetrics().density;
     }
+
+
 }
+

@@ -1,4 +1,4 @@
-//package com.nagash.appwebbrowser.controller;
+//package com.nagash.appwebbrowser.zz_deprecated.controller;
 //
 ///**
 // * Created by nagash on 09/10/16.

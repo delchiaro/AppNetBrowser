@@ -131,6 +131,7 @@ public class WebAppContainerFragment
     public void showAppNotLoaded() {
         progressBarWebApp.setVisibility(View.GONE);
         textViewWebApp.setText("No app loaded");
+        textViewWebApp.setVisibility(View.VISIBLE);
     }
     public void showAppDownloadin() {
         progressBarWebApp.setVisibility(View.VISIBLE);
@@ -169,6 +170,7 @@ public class WebAppContainerFragment
     private void startApp() {
         if(getActivity() != null && webApp != null && runningWebApp == false)
         {
+
             showAppLoading();
             boolean cached = isLastVersionCached();
             if(!cached) {
@@ -206,6 +208,7 @@ public class WebAppContainerFragment
                 hideAppLoading();
                 loadingWebApp = false;
                 runningWebApp = true;
+                getActivity().invalidateOptionsMenu();
             }
         });
 
@@ -274,6 +277,7 @@ public class WebAppContainerFragment
     {
 
         super.setTitle(R.string.webapp_fragment_actionbar_title);
+        super.updateActionBar();
         if(this.runningWebApp && this.reactFragment!=null && this.webApp != null)
         {
             reactFragment.close();
@@ -294,6 +298,8 @@ public class WebAppContainerFragment
     {
         this.isFullscreen = true;
         getMainActivity().setFullScreen(true);
+        //getMainActivity().hideBottomBar();
+
         DisplayMetrics dm = new DisplayMetrics();
         ((WindowManager)getActivity().getSystemService("window")).getDefaultDisplay().getMetrics(dm);
         int i = dm.heightPixels;
@@ -318,6 +324,7 @@ public class WebAppContainerFragment
         {
             this.isFullscreen = false;
             getMainActivity().setFullScreen(false);
+            //getMainActivity().showBottomBar();
             this.fragmentContainer.setTop(this.topBackup);
             this.fragmentContainer.setBottom(this.bottomBackup);
             this.webAppFragmentMainLayout.setTop(this.topBackup);

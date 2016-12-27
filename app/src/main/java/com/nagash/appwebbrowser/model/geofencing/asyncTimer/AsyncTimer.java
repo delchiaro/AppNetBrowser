@@ -37,6 +37,11 @@ public class AsyncTimer extends AsyncTask<Void, Void, Void> {
 
 
 
+    public boolean isRunning() { return running; }
+    public boolean isStopped() { return !running; }
+    public boolean isStopping(){ return shallStop; }
+
+
     public AsyncTimer addListener(AsyncTimerListener listener) {
         listeners.add(listener);
         return this;
@@ -101,6 +106,6 @@ public class AsyncTimer extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         shallStop = false;
-
+        running = false;
     }
 }

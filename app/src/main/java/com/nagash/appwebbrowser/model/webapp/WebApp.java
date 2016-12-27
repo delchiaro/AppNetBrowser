@@ -109,9 +109,42 @@ public class WebApp implements Geofenceable, Parcelable {
     public final Location getLocation() {
         return location;
     }
+
+
     public int getProximityRadius() {
         return proximityRadius;
     }
+
+
+
+
+
+
+    /* Mutable Interface: */
+    private boolean userNearBeacon = false;
+    private Location myLastlocation = null;
+    private float myLastLocationDistance = -1;
+
+    @Override
+    public float distanceTo(Location myLocation) {
+        if(myLastlocation != myLocation) {
+            myLastlocation = myLocation;
+            myLastLocationDistance = location.distanceTo(myLocation);
+        }
+        return myLastLocationDistance;
+    }
+
+    public void setUserNearBeacon(boolean userNearBeacon) {
+        this.userNearBeacon = userNearBeacon;
+    }
+    public boolean isUserNearBeacon() {
+        return this.userNearBeacon;
+    }
+
+
+
+
+
 
 
 

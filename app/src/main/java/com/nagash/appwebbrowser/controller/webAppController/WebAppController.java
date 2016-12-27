@@ -1,6 +1,7 @@
 package com.nagash.appwebbrowser.controller.webAppController;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.estimote.sdk.eddystone.Eddystone;
 import com.nagash.appwebbrowser.model.beacon.eddystoneProximity.EddystoneProximityListener;
@@ -18,12 +19,12 @@ import com.nagash.appwebbrowser.model.webapp.WebApp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Created by nagash on 11/12/16.
@@ -67,6 +68,10 @@ public class WebAppController
         eddystoneSettings = new EddystoneProximityManager.Settings();
         eddystoneSettings.advertiseInProximity(true);
         eddystoneSettings.advertiseConnectedOutProximity(true);
+        eddystoneSettings.advertiseLostProximity(true);
+        eddystoneSettings.advertiseOnEmptyList(true);
+        eddystoneSettings.advertiseNewProximity(true);
+
     }
 
     public void setOnUpdateListener(WebAppListener listener) {
@@ -87,7 +92,9 @@ public class WebAppController
         for(WebApp app : allApps)
             webAppBeaconMap.put(app.getUID(), app);
         eddystoneProximityManager = new EddystoneProximityManager(scanner, eddystoneSettings);
+        eddystoneProximityManager.addListener(this);
         eddystoneProximityManager.start();
+//        eddystoneProximityManager.getScanner().
 
         nearbyGeofenceManager.addAll(allApps, new GeoEvent().enableAllEvent());
         nearbyGeofenceManager.startScan(NEARBY_SCAN_FREQUENCY);
@@ -102,31 +109,54 @@ public class WebAppController
 
 
     // * * * * * * * * * * * * EDDYSTONE LISTENER  * * * * * * * * * * * *
-    @Override public void onBeaconNotInProximity(Set<Eddystone> paramSet)   {}
-    @Override public void onBeaconProximity(Set<Eddystone> paramSet)        {}
+    @Override public void onBeaconNotInProximity(Set<Eddystone> paramSet)   {
+        Log.d("AAA", "ciao");
+    }
+    @Override public void onBeaconProximity(Set<Eddystone> paramSet)        {
+        Log.d("AAA", "ciao");
+    }
     @Override public void onLostBeaconProximity(Set<Eddystone> paramSet)    {
         // update proximity list! (remove items, re-add the item in the nearby list)
+        boolean changes = false;
         for( Eddystone e : paramSet) {
             WebApp app = webAppBeaconMap.get(e.namespace + e.instance);
-            proximitySet.remove( app );
+            app.setUserNearBeacon(false);
+            appsBeaconRemovedInLastScan.add( app );
+//            appsBeacon.remove( app );
+//            appsNearby.add(app);
+            changes = true;
         }
+//
+//        if( changes )
+//            for(WebAppListener l : webAppListeners)
+//                l.onWebAppUpdate(Collections.unmodifiableSet(appsBeacon), Collections.unmodifiableSet(appsProxy), Collections.unmodifiableSet(appsNearby));
     }
     @Override public void onNewBeaconProximity(Set<Eddystone> paramSet)     {
         // update proximity list! (add items, higher priority over Geofence events! Remove the same item from nearby if present, until out of beacon proximity)
+        boolean changes = false;
         for( Eddystone e : paramSet) {
             WebApp app = webAppBeaconMap.get(e.namespace + e.instance);
-            proximitySet.add( app );
+            app.setUserNearBeacon(true);
+            appsBeacon.add( app );
+            appsBeaconRemovedInLastScan.remove( app );
+            appsNearby.remove(app);
+            changes = true;
         }
+        if( changes )
+            for(WebAppListener l : webAppListeners)
+                l.onWebAppUpdate(Collections.unmodifiableSet(appsBeacon), Collections.unmodifiableSet(appsProxy), Collections.unmodifiableSet(appsNearby));
+
+
     }
 
 
+    private LinkedHashSet<WebApp> appsBeaconRemovedInLastScan = new LinkedHashSet<>();
+    private LinkedHashSet<WebApp> appsBeacon = new LinkedHashSet<>();
+    private LinkedHashSet<WebApp> appsNearby = new LinkedHashSet<>();
+    private LinkedHashSet<WebApp> appsProxy = new LinkedHashSet<>();
 
 
-    private SortedSet<WebApp> nearbySet = null;
-    private SortedSet<WebApp> proximitySet = null;
-
-
-    boolean changes = false;
+    boolean localizAppsChanges = false;
 
     // * * * * * * * * * * * * GEOFENCE LISTENER  * * * * * * * * * * * *
     private GeofenceListener<WebApp>  nearbyGeofencListener = new GeofenceListener<WebApp>() {
@@ -135,17 +165,16 @@ public class WebAppController
         public void onGeofenceScanTask(TriggeredGeofenceableContainer<WebApp> triggered) {
             nearbyGeofenceManager.stopScan();
             if(triggered.isAtLeastOneEntering()) {
-                changes = true;
+                localizAppsChanges = true;
                 proximityGeofenceManager.addAll(triggered.enteringSet,  new GeoEvent().enableEnteringEvent().enableExitingEvent());
             }
             if(triggered.isAtLeastOneExiting()) {
-                changes = true;
+                localizAppsChanges = true;
                 proximityGeofenceManager.removeAll(triggered.exitingSet);
             }
 
-            if(triggered.isAtLeastOneIn()) {
-                nearbySet = triggered.inSet;
-            }
+            appsNearby = new LinkedHashSet<>(triggered.inSet);
+
             proximityGeofenceManager.startScan(PROXIMITY_SCAN_FREQUENCY);
         }
 
@@ -157,17 +186,25 @@ public class WebAppController
         public void onGeofenceScanTask(TriggeredGeofenceableContainer<WebApp> triggered) {
             proximityGeofenceManager.stopScan();
             if(triggered.isAtLeastOneEntering() || triggered.isAtLeastOneExiting()) {
-                changes = true;
-                proximitySet = triggered.inSet;
+                localizAppsChanges = true;
+                appsProxy = new LinkedHashSet<>(triggered.inSet);
             }
 
-            if(changes)
-                for(WebAppListener l : webAppListeners)
-                    l.onWebAppUpdate(proximitySet, nearbySet);
+            //if(localizAppsChanges)
+            if(true)
+            {
+
+                appsNearby.removeAll(appsProxy);
+                appsBeacon.removeAll(appsBeaconRemovedInLastScan);
+                appsBeaconRemovedInLastScan.clear();
+                appsNearby.removeAll(appsBeacon);
+                for (WebAppListener l : webAppListeners)
+                    l.onWebAppUpdate(Collections.unmodifiableSet(appsBeacon), Collections.unmodifiableSet(appsProxy), Collections.unmodifiableSet(appsNearby));
+            }
 
 
-            // reset changes flag befor start new scan loop (scan loop: nearby scan -> proxy scan )
-            changes = false;
+            // reset localizAppsChanges flag befor start new scan loop (scan loop: nearby scan -> proxy scan )
+            localizAppsChanges = false;
             nearbyGeofenceManager.startScan(NEARBY_SCAN_FREQUENCY);
         }
 
@@ -176,13 +213,26 @@ public class WebAppController
 
 
 
-
-
-    public static SortedSet<WebApp> getNearbyNotInProximity( SortedSet<WebApp> proximitySet, SortedSet<WebApp> nearbySet ) {
-        SortedSet<WebApp> nearbyNotInproximitySet = new TreeSet<>(nearbySet);
-        if(proximitySet != null)
-            nearbyNotInproximitySet.removeAll(proximitySet);
-        return nearbyNotInproximitySet;
-    }
+//
+//
+//    public static SortedSet<WebApp> getNearbyAppsNotInProximity(@Nullable SortedSet<WebApp> appsProxy,@Nullable SortedSet<WebApp> appsNearby ) {
+//        if(appsProxy == null) return appsNearby;
+//        if(appsNearby == null) return null;
+//
+//        SortedSet<WebApp> nearbyNotInproximitySet = new TreeSet<>(appsNearby);
+//        //if(appsProxy != null)
+//            nearbyNotInproximitySet.removeAll(appsProxy);
+//        return nearbyNotInproximitySet;
+//    }
+//
+//    public static SortedSet<WebApp> getProximityAppsNotInBeacons(@Nullable Collection<WebApp> appsBeacon,@Nullable SortedSet<WebApp> appsProxy ) {
+//        if(appsBeacon == null) return appsProxy;
+//        if(appsProxy == null) return null;
+//
+//        SortedSet<WebApp> proxyNotInBeacons = new TreeSet<>(appsProxy);
+//        //if(appsBeacon != null)
+//            proxyNotInBeacons.removeAll(appsBeacon);
+//        return proxyNotInBeacons;
+//    }
 
 }

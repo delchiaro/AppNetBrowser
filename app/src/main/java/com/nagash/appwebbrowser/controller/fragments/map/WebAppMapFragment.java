@@ -108,8 +108,6 @@ public class WebAppMapFragment
         googleMap.setOnMapClickListener(this);
         getGoogleMap().setOnMarkerClickListener(this);
         //getGoogleMap().getUiSettings().setMapToolbarEnabled(true);
-
-
     }
 
     private CharSequence titleBackup = null;
@@ -153,8 +151,6 @@ public class WebAppMapFragment
                 .setDuration(600)
                 .start();
     }
-
-
     private void animateFAB_DOWN() {
         getMainActivity().getFabProximity().animate()
                 .translationY( 0 )

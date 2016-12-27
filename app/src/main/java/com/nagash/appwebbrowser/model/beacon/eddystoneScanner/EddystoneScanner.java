@@ -90,6 +90,7 @@ public class EddystoneScanner implements BeaconManager.EddystoneListener
     private static final long DEFAULT_BACKGROUND_SLEEP_PERIOD = 9223372036854775806L;
     private static final long DEFAULT_SCAN_PERIOD = 1000L;
     private static final long DEFAULT_SLEEP_PERIOD = 1000L;
+    private static final int DEFAULT_DISCONNECT_HISTERESIS = 2;
     private static EddystoneScanner instance;
     public static final long serialVersionUID = 0L;
     private long backgroundScanPeriod;
@@ -114,13 +115,13 @@ public class EddystoneScanner implements BeaconManager.EddystoneListener
         this.eventSettings = new EventSettings();
         this.serviceStatus = ServiceStatus.DISCONNECTED;
         this.scanningStatus = ScanningStatus.NOT_SCANNING;
-        this.scanPeriod = 1000L;
-        this.sleepPeriod = 1000L;
-        this.backgroundScanPeriod = 1L;
-        this.backgroundSleepPeriod = 9223372036854775806L;
+        this.scanPeriod = DEFAULT_SCAN_PERIOD;
+        this.sleepPeriod = DEFAULT_SLEEP_PERIOD;
+        this.backgroundScanPeriod = DEFAULT_BACKGROUND_SCAN_PERIOD;
+        this.backgroundSleepPeriod = DEFAULT_BACKGROUND_SLEEP_PERIOD;
         this.scanId = null;
         this.beaconManager = null;
-        this.disconnectHisteresis = 2;
+        this.disconnectHisteresis = DEFAULT_DISCONNECT_HISTERESIS;
         this.lastScanTime = null;
         this.proximityListeners = new ArrayList<EddystoneScannerListener>();
         this.connectedBeacons = new HashSet<Eddystone>();
@@ -153,7 +154,7 @@ public class EddystoneScanner implements BeaconManager.EddystoneListener
         this.proximityListeners.add(eddystoneScannerListener);
     }
 
-    public void destroyService() {
+    protected void destroyService() {
         if (this.serviceStatus != ServiceStatus.DESTROYED) {
             this.stopScan();
             this.beaconManager.disconnect();
@@ -201,19 +202,19 @@ public class EddystoneScanner implements BeaconManager.EddystoneListener
 
             if (this.eventSettings.eventLostConnection || this.eventSettings.eventNewConnection)
             {
-                final HashSet<Eddystone> connectedBeacons = new HashSet<>(eddyList);
+                final HashSet<Eddystone> connectedBeaconsNewScan = new HashSet<>(eddyList);
 
                 if (this.eventSettings.eventNewConnection)
                 {
-                    final HashSet<Eddystone> connectedSet = new HashSet<>(eddyList.size());
+                    final HashSet<Eddystone> newConnectionSet = new HashSet<>(eddyList.size());
 
-                    for (final Eddystone eddystone : connectedSet)
+                    for (final Eddystone eddystone : connectedBeaconsNewScan) //connectedSet
                         if (!this.connectedBeacons.contains(eddystone))
-                            connectedSet.add(eddystone);
+                            newConnectionSet.add(eddystone);
 
-                    if (connectedSet.size() > 0)
+                    if (newConnectionSet.size() > 0)
                         for(EddystoneScannerListener listener : this.proximityListeners)
-                            listener.onNewConnectedBeacons(connectedSet);
+                            listener.onNewConnectedBeacons(newConnectionSet);
                 }
 
                 if (this.eventSettings.eventLostConnection)
@@ -221,7 +222,7 @@ public class EddystoneScanner implements BeaconManager.EddystoneListener
                     final HashSet lostConnectionSet = new HashSet<Eddystone>(eddyList.size());
 
                     for (final Eddystone eddystone : this.connectedBeacons)
-                        if (!connectedBeacons.contains(eddystone))
+                        if (!connectedBeaconsNewScan.contains(eddystone))
                             lostConnectionSet.add(eddystone);
 
                     if (lostConnectionSet.size() > 0)
@@ -229,7 +230,7 @@ public class EddystoneScanner implements BeaconManager.EddystoneListener
                             listener.onLostConnectedBeacons(lostConnectionSet);
                 }
 
-                this.connectedBeacons = connectedBeacons;
+                this.connectedBeacons = connectedBeaconsNewScan;
             }
 
             if (this.eventSettings.eventScan && eddyList.size() > 0 )
@@ -317,10 +318,10 @@ public class EddystoneScanner implements BeaconManager.EddystoneListener
         public boolean eventScan;
 
         public EventSettings() {
-            this.eventOnEmptyScan = false;
+            this.eventOnEmptyScan = true;
             this.eventScan = true;
             this.eventNewConnection = true;
-            this.eventLostConnection = false;
+            this.eventLostConnection = true;
         }
 
 
