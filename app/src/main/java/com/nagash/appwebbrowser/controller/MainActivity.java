@@ -1,27 +1,24 @@
 package com.nagash.appwebbrowser.controller;
 
-import android.Manifest;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,34 +27,21 @@ import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.estimote.sdk.eddystone.Eddystone;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.webAppController.WebAppController;
-import com.nagash.appwebbrowser.controller.webAppController.WebAppListener;
-import com.nagash.appwebbrowser.model.beacon.eddystoneProximity.EddystoneProximityListener;
-import com.nagash.appwebbrowser.model.beacon.eddystoneProximity.EddystoneProximityManager;
-import com.nagash.appwebbrowser.model.beacon.eddystoneScanner.EddystoneScanner;
-import com.nagash.appwebbrowser.model.beacon.eddystoneScanner.EddystoneScannerListener;
+import com.nagash.appwebbrowser.utils.BlueUtility;
 import com.nagash.appwebbrowser.model.connection.AppListDownloadHandler;
 import com.nagash.appwebbrowser.model.connection.CentralConnection;
 import com.nagash.appwebbrowser.model.localization.LocationManager;
 import com.nagash.appwebbrowser.model.localization.LocationEventListener;
-import com.nagash.appwebbrowser.model.geofencing.options.EmptyListAdvertiseOptions;
-import com.nagash.appwebbrowser.model.geofencing.GeofenceListener;
-import com.nagash.appwebbrowser.model.geofencing.GeofenceManager;
 import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabReselectListener;
 import com.roughike.bottombar.OnTabSelectListener;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
 
 import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 
@@ -152,8 +136,8 @@ public class MainActivity
 
 
     // * * * * * NOTIFICATIONS - BROADCAST RECEIVER - FULLSCREEN * * * * *
-    private final int     FULLSCREEN_NOTIFICATION_ID = 13;
-    private final String  FULLSCREEN_KEY = "com.nagash.appwebbrowser.EXIT_FULLSCREEN";
+    private final static int     FULLSCREEN_NOTIFICATION_ID = 13;
+    private final static String  FULLSCREEN_KEY = "com.nagash.appwebbrowser.EXIT_FULLSCREEN";
     BroadcastReceiver broadcastReceiver;
     private boolean fullScreen = false;
     private NotificationManager mNotificationManager = null;
@@ -230,13 +214,14 @@ public class MainActivity
      * * * * * * * * * * * * * * * APPLIST DOWNLOADER  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     @Override
-    public   void onAppListDownloaded(List<WebApp> webAppList) {
+    public  void onAppListDownloaded(List<WebApp> webAppList) {
 
         if(webAppList != null){
             // initContentViewLoaded();
             fragCtrl.getNearbyListFragment().onAppsDownloaded();
             fragCtrl.getMapFragment().setMarkers(webAppList);
             startWebAppController(webAppList);
+
 //            Collection<GeofenceObject<WebApp>> geoObjs = GeofenceObject.createGeofenceObjects(webAppList, new GeoEvent().enableInEvent());
 //            geofenceManager.setGeofenceObjects( geoObjs );
 //            geofenceManager.startScan(5000);
@@ -270,6 +255,7 @@ public class MainActivity
         bottomBar.selectTabWithId(R.id.tab_webapp);
     }
     public void closeWebApp() {
+        fragCtrl.getWebAppContainerFragment().exitFullscreen();
         fragCtrl.getWebAppContainerFragment().closeApp();
     }
     // public WebApp                   getProximityApp()   { return proximityApp;  }
@@ -445,11 +431,34 @@ public class MainActivity
     }
     @Override protected void onStart() {
         super.onStart();
+
+        if(isFullScreen())
+            showFullscreenNotification();
+
+        if(BlueUtility.isLocationEnabled(this) == false)
+            BlueUtility.requestGps(this);
+
+        if(BlueUtility.isBleSupported())
+            if(BlueUtility.isBluetoothEnabled() == false)
+                BlueUtility.requestBluetoothAccess(this);
+
+        if(centralConnection.getCachedWebAppList() != null && webAppController != null)
+            webAppController.start(centralConnection.getCachedWebAppList(), this);
         locationManager.onStart();
+
     }
     @Override protected void onStop() {
         super.onStop();
         locationManager.onStop();
+        if(webAppController != null)
+            webAppController.stop();
+
+        if(isFullScreen()) {
+            // TODO: this is a workaround for a bug - when entering in a webApp, pressing home, re-open app, pressing back,
+            // will close AppWeb Browser instead of exiting fullscreen or close the app.
+            fragCtrl.getWebAppContainerFragment().exitFullscreen();
+            hideFullscreenNotification();
+        }
     }
     @Override protected void onResume() {    // Same as onPause - need to call onHostResume on our ReactInstanceManager
         super.onResume();
@@ -538,127 +547,124 @@ public class MainActivity
         toolbarHidden = false;
     }
 
-    public void setFullScreen(boolean on) {
-        if(fullScreen && on || !fullScreen && !on) return;
-        if(!fullScreen && on) { // ENTERING FULLSCREEN
-            showFullscreenNotification();
-            hideBottomBar();
-            hideToolbar();
-            fullScreen = true;
-        }
-        else if(fullScreen && !on) { // EXITING FULLSCREEN
-            hideFullscreenNotification();
-            showBottomBar();
-            showToolbar();
-            fullScreen = false;
-        }
-    }
-
 //    public void setFullScreen(boolean on) {
 //        if(fullScreen && on || !fullScreen && !on) return;
 //        if(!fullScreen && on) { // ENTERING FULLSCREEN
-//            //.setSystemUiVisibility(flags);
-////            Rect rectangle = new Rect();
-////            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
-////            statusBarHeight = rectangle.top;
-//
 //            showFullscreenNotification();
-//            getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
-//            getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
-//
-//
-//            DisplayMetrics displayMetrics = new DisplayMetrics();
-//            WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-//            windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
-//            int deviceWidth = displayMetrics.widthPixels;
-//            int deviceHeight = displayMetrics.heightPixels;
-//
-////            Rect rectangle = new Rect();
-////            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
-////            statusBarHeight = rectangle.top;
-//            topBackup = mainFragmentContainer.getTop();
-//            bottomBackup = mainFragmentContainer.getBottom();
-//            mainFragmentContainer.setTop(0);
-//            mainFragmentContainer.setBottom(deviceHeight);
-//            mainFragmentContainer.invalidate();
-////            getWindow().addFlags(flags);
+//            hideBottomBar();
+//            hideToolbar();
 //            fullScreen = true;
 //        }
 //        else if(fullScreen && !on) { // EXITING FULLSCREEN
 //            hideFullscreenNotification();
-//            getToolbar().animate().translationY(0+statusBarHeight).setDuration(600).start();
-//            getBottomBar().animate().translationY(0).setDuration(600).start();
-//            mainFragmentContainer.setTop(topBackup);
-//            mainFragmentContainer.setBottom(bottomBackup);
-//            mainFragmentContainer.invalidate();
-////            getWindow().clearFlags(flags);
+//            showBottomBar();
+//            showToolbar();
 //            fullScreen = false;
 //        }
 //    }
 
-    private void hideFullscreenNotification() {
-//        if(mNotificationManager != null)
-//            mNotificationManager.cancel(FULLSCREEN_NOTIFICATION_ID);
-    }
+    public void setFullScreen(boolean on) {
+        if(fullScreen && on || !fullScreen && !on) return;
+        if(!fullScreen && on) { // ENTERING FULLSCREEN
+            //.setSystemUiVisibility(flags);
+//            Rect rectangle = new Rect();
+//            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+//            statusBarHeight = rectangle.top;
 
-    //TODO: RECOVEREDVERSION
-//    private void showFullscreenNotification() {
-//
-//        final NotificationCompat.Builder setPriority =
-//                new NotificationCompat.Builder(this)
-//                        .setSmallIcon(R.drawable.ic_up_down_arrows_white_24dp)
-//                        .setContentTitle((CharSequence) "WebApp in fullscreen mode")
-//                        .setContentText((CharSequence) "Tap to exit fullscreen mode")
-//                        .setAutoCancel(true)
-//                        .setPriority(Notification.PRIORITY_MAX);
-//
-//        final PendingIntent broadcast = PendingIntent.getBroadcast((Context) this, 0, new Intent((Context) this, (Class) FullscreenBroadcastreceiver.class), 0);
-//        setPriority.setContentIntent(broadcast);
-//        setPriority.addAction(2130837647, (CharSequence) "com.nagash.appwebbrowser.EXIT_FULLSCREEN", broadcast);
-//        if (this.mNotificationManager == null) {
-//            this.mNotificationManager = (NotificationManager) this.getSystemService("notification");
-//        }
-//        this.mNotificationManager.notify(13, setPriority.build());
-//
-//    }
+            showFullscreenNotification();
+            getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
+            getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
 
 
-    private void showFullscreenNotification() {
-//        NotificationCompat.Builder mBuilder =
-//                new NotificationCompat.Builder(this)
-//                        .setSmallIcon(R.drawable.ic_up_down_arrows_white_24dp)
-//                        .setContentTitle("WebApp in fullscreen mode")
-//                        .setContentText("Tap to exit fullscreen mode")
-//                        .setAutoCancel(true)
-//                        .setPriority(Notification.PRIORITY_MAX);
-//
-//
-//
-//        Intent closeFullscreenIntent = new Intent(this, FullscreenBroadcastreceiver.class);
-//        PendingIntent fullscreenPendingIntent = PendingIntent.getBroadcast(this, 0, closeFullscreenIntent, 0);
-//
-//        mBuilder.setContentIntent(fullscreenPendingIntent);
-//        mBuilder.addAction(R.drawable.ic_up_down_arrows_white_24dp, "com.nagash.appwebbrowser.EXIT_FULLSCREEN", fullscreenPendingIntent);
-//
-//        if(mNotificationManager == null)
-//            mNotificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
-//        mNotificationManager.notify(FULLSCREEN_NOTIFICATION_ID, mBuilder.build());
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+            windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
+            int deviceWidth = displayMetrics.widthPixels;
+            int deviceHeight = displayMetrics.heightPixels;
 
-    }
-
-    public static class FullscreenBroadcastreceiver extends  BroadcastReceiver {
-
-        public FullscreenBroadcastreceiver() {}
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            MainActivity mainActivity = getMainActivity();
-            // TODO: null pointer reference
-            String action = intent.getAction();
-            if (mainActivity != null) {
-                getMainActivity().setFullScreen(false);
-            }
+//            Rect rectangle = new Rect();
+//            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+//            statusBarHeight = rectangle.top;
+            topBackup = mainFragmentContainer.getTop();
+            bottomBackup = mainFragmentContainer.getBottom();
+            mainFragmentContainer.setTop(0);
+            mainFragmentContainer.setBottom(deviceHeight);
+            mainFragmentContainer.invalidate();
+//            getWindow().addFlags(flags);
+            fullScreen = true;
         }
-    };
+        else if(fullScreen && !on) { // EXITING FULLSCREEN
+            hideFullscreenNotification();
+            getToolbar().animate().translationY(0+statusBarHeight).setDuration(600).start();
+            getBottomBar().animate().translationY(0).setDuration(600).start();
+            mainFragmentContainer.setTop(topBackup);
+            mainFragmentContainer.setBottom(bottomBackup);
+            mainFragmentContainer.invalidate();
+//            getWindow().clearFlags(flags);
+            fullScreen = false;
+        }
+    }
+
+    private void hideFullscreenNotification() {
+        if(mNotificationManager != null)
+            mNotificationManager.cancel(FULLSCREEN_NOTIFICATION_ID);
+    }
+    private void showFullscreenNotification() {
+
+//        Intent action1Intent = new Intent(this, MainActivity.NotificationActionService.class).setAction(FULLSCREEN_KEY);
+//        PendingIntent action1PendingIntent = PendingIntent.getService(this, 0, action1Intent, PendingIntent.FLAG_ONE_SHOT);
+
+
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent nid = new Intent(this, NotificationActionService.class);
+        // If you were starting a service, you wouldn't using getActivity() here
+        PendingIntent ci = PendingIntent.getService(this, FULLSCREEN_NOTIFICATION_ID, nid, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_up_down_arrows_white_24dp)
+                        .setContentTitle("WebApp in fullscreen mode")
+                        .setContentText("Tap to exit fullscreen mode")
+                        .setAutoCancel(true)
+                        .setOngoing(true)
+                        .setPriority(Notification.PRIORITY_MAX)
+                        //.addAction(new NotificationCompat.Action(R.drawable.ic_up_down_arrows_white_24dp, "Exit Fullscreen", action1PendingIntent))
+                        .setContentIntent(ci);
+
+        mNotificationManager.notify(FULLSCREEN_NOTIFICATION_ID, notificationBuilder.build());
+//
+//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+//        notificationManager.notify(FULLSCREEN_NOTIFICATION_ID, notificationBuilder.build());
+//        notificationBuilder.setContentIntent(action1PendingIntent);
+    }
+    public static class NotificationActionService extends IntentService {
+        public NotificationActionService() {
+            super(NotificationActionService.class.getSimpleName());
+        }
+
+
+        @Override
+        public void onStart(Intent intent, int startId) {
+            super.onStart(intent, startId);
+        }
+
+        @Override
+        protected void onHandleIntent(Intent intent) {
+            String action = intent.getAction();
+            //if (action.equals(FULLSCREEN_KEY)) {
+            if (getMainActivity() != null) {
+                getMainActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getMainActivity().fragCtrl.getWebAppContainerFragment().exitFullscreen();
+                    }
+                });
+            }
+            NotificationManagerCompat.from(this).cancel(FULLSCREEN_NOTIFICATION_ID);
+           // }
+        }
+    }
+
     @Override
     protected void onNewIntent(Intent intent)
     {

@@ -27,6 +27,7 @@ import com.nagash.appwebbrowser.model.webapp.WebApp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -191,14 +192,20 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
 
         Location currentLocation = getMainActivity().getLocationManager().getCurrentLocation();
 
-        LinkedList proxyAndBeaconList = new LinkedList();// todo
 
 
+        LinkedHashSet proxyAndBeaconList = new LinkedHashSet();
         for(WebApp app : beaconApps)
             proxyAndBeaconList.add(app);
 
         for(WebApp app  : proximityApps)
-             proxyAndBeaconList.addLast(app);
+             proxyAndBeaconList.add(app);
+
+
+
+        LinkedHashSet<WebApp> nearbyNotProxy = new LinkedHashSet<>(nearbyApps);
+        nearbyNotProxy.removeAll(proxyAndBeaconList);
+
 //
 //
 //        if(nearbyNotProxy != null && proxyNotBeacon != null)
@@ -207,7 +214,7 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
 //                    proxyAndBeaconList.addLast(app);
 
 
-        updateNarbyApps(nearbyApps, currentLocation);
+        updateNarbyApps(nearbyNotProxy, currentLocation);
         updateProxyApps(proxyAndBeaconList, currentLocation);
     }
 
