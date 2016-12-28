@@ -57,6 +57,8 @@ public class FragmentsController
 
     // return true if FragmentsController handled the event
     public boolean onMainBackPressed() {
+        boolean ret;
+
         // if AppDetails are open, closeAppDetails() will close and return true.
         if( closeAppDetails() )
             return true;
@@ -64,22 +66,23 @@ public class FragmentsController
         else if(getActiveFragment()!=null)
         {
             if(  getActiveFragment().onBackPressed() )
-                return true;
+                ret =  true;
             else if(mainMode == MainMode.WEBAPP) {
                 MainMode backMode = oldMainMode;
                 oldMainMode = MainMode.NEARBY;
                 main.activateMode(backMode);
-                return true;
+                ret = true;
             }
             else if(mainMode != MainMode.NEARBY)
             {
                 oldMainMode = mainMode.NEARBY;
                 main.activateMode(MainMode.NEARBY);
-                return true;
+                ret = true;
             }
-            else return false;
+            else ret = false;
         }
-        else return false;
+        else ret = false;
+        return ret;
     }
 
 
