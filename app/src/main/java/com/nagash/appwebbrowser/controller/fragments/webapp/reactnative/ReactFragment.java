@@ -129,8 +129,30 @@ public class ReactFragment
 
     @Override
     public void onDestroy() {
-        this.close();
         super.onDestroy();
+        if (mReactInstanceManager != null) {
+            mReactRootView.unmountReactApplication();
+            mReactInstanceManager.onHostDestroy();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mReactInstanceManager != null) {
+            mReactInstanceManager.onHostPause();
+        }
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mReactInstanceManager != null) {
+            mReactInstanceManager.onHostResume(getActivity(), this);
+        }
     }
 
 
@@ -144,8 +166,12 @@ public class ReactFragment
     }
 
     public boolean onBackPressed() {
-        mReactInstanceManager.onBackPressed();
-        return true;
+        if (mReactInstanceManager != null) {
+            mReactInstanceManager.onBackPressed();
+            return true;
+        } else {
+            return super.onBackPressed();
+        }
     }
 
     public void close() {
