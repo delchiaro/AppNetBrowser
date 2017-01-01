@@ -190,6 +190,9 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
     @Override
     public    void onWebAppUpdate(@NonNull Collection<WebApp> beaconApps,@NonNull Collection<WebApp> proximityApps ,@NonNull Collection<WebApp> nearbyApps) {
 
+        //if(isDetached()) return;
+        if(getMainActivity() == null) return;
+
         Location currentLocation = getMainActivity().getLocationManager().getCurrentLocation();
 
 

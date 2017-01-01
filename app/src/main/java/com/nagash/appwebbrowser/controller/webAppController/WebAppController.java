@@ -109,9 +109,11 @@ public class WebAppController
 
     public void stop() {
         if (BlueUtility.isBleSupported()) {
-            eddystoneProximityManager.stop();
+            if(eddystoneProximityManager!=null)
+                eddystoneProximityManager.stop();
         }
-        nearbyGeofenceManager.stopScan();
+        if(nearbyGeofenceManager != null)
+            nearbyGeofenceManager.stopScan();
     }
 
 
@@ -120,12 +122,8 @@ public class WebAppController
 
 
     // * * * * * * * * * * * * EDDYSTONE LISTENER  * * * * * * * * * * * *
-    @Override public void onBeaconNotInProximity(Set<Eddystone> paramSet)   {
-        Log.d("AAA", "ciao");
-    }
-    @Override public void onBeaconProximity(Set<Eddystone> paramSet)        {
-        Log.d("AAA", "ciao");
-    }
+    @Override public void onBeaconNotInProximity(Set<Eddystone> paramSet)   {}
+    @Override public void onBeaconProximity(Set<Eddystone> paramSet)        {}
     @Override public void onLostBeaconProximity(Set<Eddystone> paramSet)    {
         // update proximity list! (remove items, re-add the item in the nearby list)
         boolean changes = false;
@@ -139,8 +137,7 @@ public class WebAppController
         }
 
         if( changes )
-            for(WebAppListener l : webAppListeners)
-                l.onWebAppUpdate(Collections.unmodifiableCollection(appsBeacon), Collections.unmodifiableCollection(appsProxy), Collections.unmodifiableCollection(appsNearby));
+            callListeners(appsBeacon, appsProxy, appsNearby);
     }
     @Override public void onNewBeaconProximity(Set<Eddystone> paramSet)     {
         // update proximity list! (add items, higher priority over Geofence events! Remove the same item from nearby if present, until out of beacon proximity)
@@ -154,8 +151,7 @@ public class WebAppController
             changes = true;
         }
         if( changes )
-            for(WebAppListener l : webAppListeners)
-                l.onWebAppUpdate(Collections.unmodifiableCollection(appsBeacon), Collections.unmodifiableCollection(appsProxy), Collections.unmodifiableCollection(appsNearby));
+            callListeners(appsBeacon, appsProxy, appsNearby);
 
 
     }
@@ -203,11 +199,8 @@ public class WebAppController
             appsProxy = triggered.inSet;
 
             //if(localizAppsChanges)
-            if(true)
-            {
-                for (WebAppListener l : webAppListeners)
-                    l.onWebAppUpdate(Collections.unmodifiableCollection(appsBeacon), Collections.unmodifiableCollection(appsProxy), Collections.unmodifiableCollection(appsNearby));
-            }
+            callListeners(appsBeacon, appsProxy, appsNearby);
+
 
 
             // reset localizAppsChanges flag befor start new scan loop (scan loop: nearby scan -> proxy scan )
@@ -218,6 +211,12 @@ public class WebAppController
 
     };
 
+
+    private void callListeners(Collection appsBeacon, Collection appsProxy, Collection appsNearby) {
+        for (WebAppListener l : webAppListeners)
+            l.onWebAppUpdate(Collections.unmodifiableCollection(appsBeacon), Collections.unmodifiableCollection(appsProxy), Collections.unmodifiableCollection(appsNearby));
+
+    }
 
 
 //

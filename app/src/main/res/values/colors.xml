@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="activity_background_color">#EEEEEE</color>
+
+
+    <color name="colorBottomBarLight">#FFFFFF</color>
+    <color name="colorBottomBarDark">#111111</color>
+    <color name="colorBottomBar">@color/colorBottomBarLight</color>
+
 
     <color name="colorNearbyPrimary">#43a047</color>
     <color name="colorNearbyPrimaryDark">#2e7d32</color>

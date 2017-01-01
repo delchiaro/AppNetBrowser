@@ -70,7 +70,6 @@
                 android:layout_height="wrap_content"
                 card:card_layout_resourceID="@layout/cardwithlist_native_layout_mod"
                 style="@style/card_external"
-
                 android:layout_marginBottom="0dp"
                 android:layout_marginTop="0dp"
                 android:paddingTop="0dp"

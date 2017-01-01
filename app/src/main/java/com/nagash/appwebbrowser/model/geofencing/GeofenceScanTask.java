@@ -117,7 +117,8 @@ public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Collect
     @Override
     protected void onPostExecute(TriggeredGeofenceableContainer<T> tgl) {
         super.onPostExecute(tgl);
-        if(advertiseOnEmptyList() || tgl.isAtLeastOneTriggered() )
-            geofenceManager.onGeofenceScanTaskFinished(tgl);
+        if(!isCancelled())
+            if(advertiseOnEmptyList() || tgl.isAtLeastOneTriggered() )
+                geofenceManager.onGeofenceScanTaskFinished(tgl);
     }
 }

@@ -131,7 +131,12 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
      * If a scanningTask is running right now, this task will finish.
      */
     public void stopScan() {
-        asyncTimer.stop();
+        if(asyncTimer != null)
+            asyncTimer.stop();
+        if(scanTask != null) {
+            scanTask.cancel(true);
+            scanTask = null;
+        }
     }
 
 
@@ -194,13 +199,15 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
 
 
     protected void onGeofenceScanTaskFinished(TriggeredGeofenceableContainer<T> tgc) {
-        scanTask = null;
-        listener.onGeofenceScanTask(tgc);
+        if(scanTask != null) {
+            scanTask = null;
+            listener.onGeofenceScanTask(tgc);
 //        if( tgc.isAtLeastOneEntering() ) listener.onGeofenceEntering(tgc.enteringSet);
 //        if( tgc.isAtLeastOneIn() )       listener.onGeofenceIn(tgc.inSet);
 //        if( tgc.isAtLeastOneExiting() )  listener.onGeofenceExiting(tgc.exitingSet);
 //        if( tgc.isAtLeastOneOut() )      listener.onGeofenceOut(tgc.outSet);
-
+        }
+        // else: scan task has been cancelled, see GeofenceManager#stopScan()
     }
 
 

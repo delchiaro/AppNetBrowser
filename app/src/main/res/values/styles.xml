@@ -8,7 +8,13 @@
     <!--<item name="colorAccent">@color/colorAccent</item>-->
     <!--</style>-->
 
+
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!--<item name="android:background">@color/white_opaque</item>-->
+        <item name="android:windowBackground">@color/activity_background_color</item>
+        <!--<item name="android:colorBackground">@color/white_opaque</item>-->
+
+
         <!--   your app branding color for the app bar -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <!--   darker variant for the geoStatus bar and contextual app bars -->
