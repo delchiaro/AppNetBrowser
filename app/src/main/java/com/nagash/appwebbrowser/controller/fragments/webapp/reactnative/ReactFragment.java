@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.facebook.react.LifecycleState;
 import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactRootView;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.shell.MainReactPackage;
@@ -79,6 +80,8 @@ public class ReactFragment
     public void onAttach(Context context) {
         super.onAttach(context);
         this.context = context;
+
+        ReactNativeHost host;
 
         ReactInstanceManager.Builder builder = ReactInstanceManager.builder();
         builder.setApplication(getActivity().getApplication());

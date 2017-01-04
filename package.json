@@ -1,15 +1,24 @@
 {
   "name": "appwebbrowser",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Nagash",
   "license": "ISC",
   "dependencies": {
-    "react": "^15.3.1",
-    "react-native": "^0.32.0"
-  }
+    "react": "^15.4.1",
+    "react-native": "^0.32.1",
+    "react-native-material-kit": "^0.3.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nagash91/AppWebBrowser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nagash91/AppWebBrowser/issues"
+  },
+  "homepage": "https://github.com/nagash91/AppWebBrowser#readme",
+  "description": ""
 }
