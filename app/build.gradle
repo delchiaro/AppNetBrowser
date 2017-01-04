@@ -58,7 +58,7 @@ dependencies {
 
     // React Native Stuff:
     //compile 'com.facebook.react:react-native:0.20.1'
-    compile "com.facebook.react:react-native:0.32.+"  // From node_modules
+    compile "com.facebook.react:react-native:0.40.+"  // From node_modules
     //compile "com.facebook.react:react-native:0.15.1"
     compile project(':RNMaterialKit')
 
