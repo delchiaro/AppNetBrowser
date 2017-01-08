@@ -170,7 +170,7 @@ public class WebAppContainerFragment
     private void startApp() {
         if(getActivity() != null && webApp != null && runningWebApp == false)
         {
-
+            //enterFullscreen(); // TODO: visual bug when entering fullscreen before starting the app
             showAppLoading();
             boolean cached = isLastVersionCached();
             if(!cached) {
@@ -302,17 +302,20 @@ public class WebAppContainerFragment
 
         DisplayMetrics dm = new DisplayMetrics();
         ((WindowManager)getActivity().getSystemService("window")).getDefaultDisplay().getMetrics(dm);
-        int i = dm.heightPixels;
+        int displayHeight = dm.heightPixels;
+        int statusbarHeight= getMainActivity().getStatusBarHeight();
+        int bottom = displayHeight-statusbarHeight;
+
         this.topBackup = this.fragmentContainer.getTop();
         this.bottomBackup = this.fragmentContainer.getBottom();
         this.fragmentContainer.setTop(0);
-        this.fragmentContainer.setBottom(i);
+        this.fragmentContainer.setBottom(bottom);
         this.webAppFragmentMainLayout.setTop(0);
-        this.webAppFragmentMainLayout.setBottom(i);
+        this.webAppFragmentMainLayout.setBottom(bottom);
         if (this.reactFragment != null)
         {
             this.reactFragment.getReactRootView().setTop(0);
-            this.reactFragment.getReactRootView().setBottom(i);
+            this.reactFragment.getReactRootView().setBottom(bottom);
         }
 
     }

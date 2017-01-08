@@ -18,7 +18,7 @@ import java.util.List;
  * Created by nagash on 04/01/17.
  */
 
-
+// USELESS CLASS NOW, USEFULL ONLY AS PLACE HOLDER: REMIND HOW TO INTEGRATE PACKAGES IN THIS PROJECT.
 public class MainApplication extends Application  implements ReactApplication {
 
 
@@ -34,6 +34,8 @@ public class MainApplication extends Application  implements ReactApplication {
             return Arrays.<ReactPackage>asList(
                     new MainReactPackage(),
                     new ReactMaterialKitPackage()
+                    // !! DON'T ADD HERE THE PACKAGES!!! USE ReactFragment#onAttach
+                    // You can add package with builder.addPackage( .. )
             );
         }
     };
@@ -41,15 +43,10 @@ public class MainApplication extends Application  implements ReactApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        // do stuff (prefs, etc)
-
-        // start the initial Activity
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-
-       // SoLoader.init(this, /* native exopackage */ false);
+//        Intent intent = new Intent(this, MainActivity.class);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(intent);
+       SoLoader.init(this, /* native exopackage */ false);
 
     }
 

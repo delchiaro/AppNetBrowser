@@ -1,5 +1,6 @@
 package com.nagash.appwebbrowser.controller.fragments.webapp.reactnative;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,8 @@ import com.facebook.react.ReactRootView;
 import com.facebook.react.common.LifecycleState;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.shell.MainReactPackage;
+import com.github.xinthink.rnmk.ReactMaterialKitPackage;
+import com.nagash.appwebbrowser.controller.MainApplication;
 import com.nagash.appwebbrowser.controller.MainFragment;
 import com.nagash.appwebbrowser.controller.fragments.webapp.WebAppContainerFragment;
 import com.nagash.appwebbrowser.model.connection.CentralConnection;
@@ -85,6 +88,7 @@ public class ReactFragment
 
         ReactInstanceManager.Builder builder = ReactInstanceManager.builder();
         builder.setApplication(getActivity().getApplication());
+        builder.addPackage(new ReactMaterialKitPackage());
         builder.setUseDeveloperSupport(false);
         builder.setJSMainModuleName("index.android");
         builder.addPackage(new MainReactPackage());

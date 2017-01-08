@@ -253,6 +253,7 @@ public class MainActivity
         activeWebApp = webApp;
         fragCtrl.getWebAppContainerFragment().startApp(webApp);
         bottomBar.selectTabWithId(R.id.tab_webapp);
+
     }
     public void closeWebApp() {
         fragCtrl.getWebAppContainerFragment().exitFullscreen();
@@ -499,7 +500,6 @@ public class MainActivity
         * * * * * * * * * * * * * * * MANAGE FULLSCREEN MODE * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    int statusBarHeight = 0;
     int topBackup = 0;
     int bottomBackup = 0;
     boolean bottomBarHidden = false;
@@ -529,7 +529,7 @@ public class MainActivity
 
     public void hideToolbar() {
         if(toolbarHidden)return;
-        getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
+        getToolbar().animate().translationY( -pxFromDp(60) ).setDuration(600).start();
         DisplayMetrics displayMetrics = new DisplayMetrics();
         WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
@@ -571,9 +571,10 @@ public class MainActivity
 //            getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
 //            statusBarHeight = rectangle.top;
 
+            statusBarHeight = getStatusBarHeight();
             showFullscreenNotification();
             getToolbar().animate().translationY( -pxFromDp(100) ).setDuration(600).start();
-            getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
+            getBottomBar().animate().translationY( pxFromDp(80) ).setDuration(600).start();
 
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -588,14 +589,15 @@ public class MainActivity
             topBackup = mainFragmentContainer.getTop();
             bottomBackup = mainFragmentContainer.getBottom();
             mainFragmentContainer.setTop(0);
-            mainFragmentContainer.setBottom(deviceHeight);
+            int bottom = deviceHeight-(statusBarHeight);
+            mainFragmentContainer.setBottom(bottom);
             mainFragmentContainer.invalidate();
 //            getWindow().addFlags(flags);
             fullScreen = true;
         }
         else if(fullScreen && !on) { // EXITING FULLSCREEN
             hideFullscreenNotification();
-            getToolbar().animate().translationY(0+statusBarHeight).setDuration(600).start();
+            getToolbar().animate().translationY(0).setDuration(600).start();
             getBottomBar().animate().translationY(0).setDuration(600).start();
             mainFragmentContainer.setTop(topBackup);
             mainFragmentContainer.setBottom(bottomBackup);
@@ -727,6 +729,18 @@ public class MainActivity
         return dp * getResources().getDisplayMetrics().density;
     }
 
+    int statusBarHeight = -1;
+    public int getStatusBarHeight() {
+        if(statusBarHeight == -1) {
+            statusBarHeight = 0;
+            int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > 0) {
+                statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+            }
+            return statusBarHeight;
+        }
+        else return statusBarHeight;
+    }
 
 }
 
