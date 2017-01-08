@@ -4,12 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,15 +16,17 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.MainFragment;
 import com.nagash.appwebbrowser.model.localization.Localizable;
-import com.nagash.appwebbrowser.model.webapp.WebApp;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * Created by nagash on 15/09/16.
  */
-public class AMapFragment<L extends Localizable> extends MainFragment
+public abstract class AMapFragment<L extends Localizable> extends MainFragment
         implements OnMapReadyCallback
 {
 
@@ -47,6 +47,7 @@ public class AMapFragment<L extends Localizable> extends MainFragment
     private GoogleMap          googleMap  = null;
     private List<L>            localizables = null;
     private Map<Marker, L>     markersMap = new HashMap<>();
+    private BitmapDescriptor   defaultIcon = null;
 
     public AMapFragment() {
         super();
@@ -56,6 +57,7 @@ public class AMapFragment<L extends Localizable> extends MainFragment
 
     @Override public void onAttach(Context context) {
         super.onAttach(context);
+        MapsInitializer.initialize(context);
     }
 
     @Override public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,9 +75,8 @@ public class AMapFragment<L extends Localizable> extends MainFragment
 
     @Override public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated: begin");
-        // FragmentManager fm = getChildFragmentManager();
-//         mMapFragment = ((SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.google_map));
+
+        defaultIcon = getDefaultMarkerIcon();
         if(mMapFragment == null) {
             mMapFragment = SupportMapFragment.newInstance();
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
@@ -83,14 +84,7 @@ public class AMapFragment<L extends Localizable> extends MainFragment
             fragmentTransaction.commit();
             mMapFragment.getMapAsync(AMapFragment.this);
         }
-        Log.d(TAG, "onActivityCreated: fragmentTransaction.commit() done");
-//        new AsyncTask<Void, Void, Void>() {
-//            @Override protected Void doInBackground(Void... voids) {
-//                return null;
-//            }
-//        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null);
-        Log.d(TAG, "onActivityCreated: getMapAsync() done");
-        Log.d(TAG, "onActivityCreated: end");
+
 
     }
 
@@ -115,21 +109,44 @@ public class AMapFragment<L extends Localizable> extends MainFragment
     }
 
 
-
+    public void setMarkerIcon(BitmapDescriptor icon) {
+        this.defaultIcon = icon;
+    }
+    abstract protected BitmapDescriptor getDefaultMarkerIcon();
 
     private Marker addMarker(@NonNull Location location) {
         return addMarker(location.getLatitude(), location.getLongitude());
     }
+    private Marker addMarker(@NonNull Location location, BitmapDescriptor icon) {
+        return addMarker(location.getLatitude(), location.getLongitude(), icon);
+    }
+
     private Marker addMarker(double lat, double lng) {
         return addMarker(new LatLng(lat, lng));
+    }
+    private Marker addMarker(double lat, double lng, BitmapDescriptor icon) {
+        return addMarker(new LatLng(lat, lng), icon);
     }
     private Marker addMarker(@NonNull LatLng latlng) {
         MarkerOptions mo = new MarkerOptions();
         mo.position(latlng);
+        return addMarker(mo);
+    }
+
+    private Marker addMarker(@NonNull LatLng latlng, BitmapDescriptor icon) {
+        MarkerOptions mo = new MarkerOptions();
+        mo.position(latlng);
+        mo.icon(icon);
+        return addMarker(mo);
+    }
+
+    private Marker addMarker(MarkerOptions markerOptions) {
+
         if(googleMap != null)
-            return googleMap.addMarker(mo);
+            return googleMap.addMarker(markerOptions);
         else return null;
     }
+
 
 
 
@@ -148,10 +165,11 @@ public class AMapFragment<L extends Localizable> extends MainFragment
         updateGoogleMapMarkers();
     }
 
+
     public void updateGoogleMapMarkers() {
         if(googleMap != null && localizables != null)
             for(L l : localizables)
-               markersMap.put(addMarker(l.getLocation()), l);
+               markersMap.put(addMarker(l.getLocation(), defaultIcon), l);
     }
 
 

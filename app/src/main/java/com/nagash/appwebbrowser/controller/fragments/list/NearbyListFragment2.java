@@ -157,23 +157,26 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
             @Override public void onSwipe(WebApp webApp) {}
         };
 
-        nearbyAppListCard = new AppListCard(getActivity(), "Nearby Apps", false);
+
+
+        proxyAppListCard = new AppListCard(getActivity(), getString(R.string.proxy_app_list_title), false);
+        proxyAppListCard.init();
+        proxyAppListCard.setAppListItemlistener(itemListener);
+        proxyAppListCard.updateProgressBar(false,false);
+
+        nearbyAppListCard = new AppListCard(getActivity(), getString(R.string.nearby_app_list_title), false);
         nearbyAppListCard.init();
         nearbyAppListCard.setAppListItemlistener(itemListener);
         nearbyAppListCard.updateProgressBar(false,false);
 
 
-        proxyAppListCard = new AppListCard(getActivity(), "Apps in your proximity", false);
-        proxyAppListCard.init();
-        proxyAppListCard.setAppListItemlistener(itemListener);
-        proxyAppListCard.updateProgressBar(false,false);
-
+        proxyCardView = (CardViewNative) getActivity().findViewById(R.id.proxy_app_list_card);
+        proxyCardView.setCard(proxyAppListCard);
 
         nearbyCardView = (CardViewNative) getActivity().findViewById(R.id.nearby_app_list_card);
         nearbyCardView.setCard(nearbyAppListCard);
 
-        proxyCardView = (CardViewNative) getActivity().findViewById(R.id.proxy_app_list_card);
-        proxyCardView.setCard(proxyAppListCard);
+
 
         btnConnect.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { getMainActivity().retryConnection();}  });
         refreshState();
@@ -201,6 +204,7 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
         for(WebApp app : beaconApps)
             proxyAndBeaconList.add(app);
 
+
         for(WebApp app  : proximityApps)
              proxyAndBeaconList.add(app);
 
@@ -219,6 +223,8 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
 
         updateNarbyApps(nearbyNotProxy, currentLocation);
         updateProxyApps(proxyAndBeaconList, currentLocation);
+        getMainActivity().setNearbyAppsCounter(proxyAndBeaconList.size());
+
     }
 
     public void updateNarbyApps(Collection<WebApp> nearby, Location myLocation) {

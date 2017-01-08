@@ -13,23 +13,26 @@
     <string name="tab_3">Tab 3</string>
     <string name="title_activity_tabbed">TabbedActivity</string>
     <string name="section_format">Hello World from section: %1$d</string>
-    <string name="add_to_favorites">Add to Favorites</string>
 
 
-    <string name="tv_favourite_list">Favourite Apps:</string>
+
 
 
     <!-- Nearby Fragment -->
-    <string name="nearby_fragment_actionbar_title">Nearby Apps</string>
-
+    <string name="nearby_fragment_actionbar_title">Nearby</string>
+        <string name="proxy_app_list_title">Apps in your proximity:</string>
+        <string name="nearby_app_list_title">Other nearby Apps:</string>
     <!-- Favourites Fragment -->
-    <string name="favourites_fragment_actionbar_title">Favourite Apps</string>
+    <string name="favourites_fragment_actionbar_title">Favourites</string>
+        <string name="tv_favourite_list">Favourite Apps:</string>
+        <string name="add_to_favorites">Add to Favorites</string>
 
     <!-- Map Fragment -->
     <string name="map_fragment_actionbar_title">Map</string>
 
     <!-- WebApp Fragment -->
-    <string name="webapp_fragment_actionbar_title">WebApp: not loaded.</string>
+    <string name="webapp_fragment_actionbar_title">WebApp</string>
+
 
 
     <!-- Menus -->

@@ -28,6 +28,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.webAppController.WebAppController;
 import com.nagash.appwebbrowser.utils.BlueUtility;
@@ -38,6 +39,7 @@ import com.nagash.appwebbrowser.model.localization.LocationEventListener;
 import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 import com.roughike.bottombar.BottomBar;
+import com.roughike.bottombar.BottomBarTab;
 import com.roughike.bottombar.OnTabReselectListener;
 import com.roughike.bottombar.OnTabSelectListener;
 
@@ -219,6 +221,7 @@ public class MainActivity
         if(webAppList != null){
             // initContentViewLoaded();
             fragCtrl.getNearbyListFragment().onAppsDownloaded();
+
             fragCtrl.getMapFragment().setMarkers(webAppList);
             startWebAppController(webAppList);
 
@@ -262,6 +265,12 @@ public class MainActivity
     // public WebApp                   getProximityApp()   { return proximityApp;  }
     // public WebApp                   getActiveWebApp()   { return activeWebApp;  }
 
+    public void setNearbyAppsCounter(int counter) {
+        BottomBarTab nearby = bottomBar.getTabWithId(R.id.tab_nearby);
+        if(counter <= 0)
+            nearby.removeBadge();
+        else nearby.setBadgeCount(counter);
+    }
     private void initWebAppController() {
         webAppController = new WebAppController(locationManager);
         webAppController.setOnUpdateListener(fragCtrl.getNearbyListFragment());
@@ -323,7 +332,7 @@ public class MainActivity
             @Override public void onTabSelected(@IdRes int tabId) {
 
                 switch(tabId) {
-                    case R.id.tab_list:
+                    case R.id.tab_nearby:
                         fragCtrl.changeMode(MainMode.NEARBY);
                         break;
 
@@ -341,35 +350,35 @@ public class MainActivity
                 }
             }
         });
-        bottomBar.setOnTabReselectListener(new OnTabReselectListener() {
-            @Override
-            public void onTabReSelected(@IdRes int tabId) {
-
-                View yourView = bottomBar.getTabWithId(tabId);
-                switch (tabId) {
-                    case R.id.tab_list:
-                        SimpleTooltip t = new SimpleTooltip.Builder(getBaseContext())
-                                .anchorView(yourView)
-                                .text("FIlter Radius")
-                                .gravity(Gravity.TOP)
-                                .animated(false)
-                                .transparentOverlay(true)
-                                .contentView(R.layout.tooltip_filter_slider)
-                                .build();
-                        t.show();
-
-                        break;
-
-                    case R.id.tab_map:
-
-                        break;
-
-                    case R.id.tab_webapp:
-
-                        break;
-                }
-            }
-        });
+//        bottomBar.setOnTabReselectListener(new OnTabReselectListener() {
+//            @Override
+//            public void onTabReSelected(@IdRes int tabId) {
+//
+//                View yourView = bottomBar.getTabWithId(tabId);
+//                switch (tabId) {
+//                    case R.id.tab_nearby:
+//                        SimpleTooltip t = new SimpleTooltip.Builder(getBaseContext())
+//                                .anchorView(yourView)
+//                                .text("FIlter Radius")
+//                                .gravity(Gravity.TOP)
+//                                .animated(false)
+//                                .transparentOverlay(true)
+//                                .contentView(R.layout.tooltip_filter_slider)
+//                                .build();
+//                        t.show();
+//
+//                        break;
+//
+//                    case R.id.tab_map:
+//
+//                        break;
+//
+//                    case R.id.tab_webapp:
+//
+//                        break;
+//                }
+//            }
+//        });
 
         fragCtrl.changeMode(MainMode.NEARBY);
         fragCtrl.earlyInitMapFragment();
@@ -392,7 +401,7 @@ public class MainActivity
         switch (mode)
         {
             case NEARBY:
-                bottomBar.selectTabWithId(R.id.tab_list);
+                bottomBar.selectTabWithId(R.id.tab_nearby);
                 break;
             case FAVOURITES:
                 bottomBar.selectTabWithId(R.id.tab_favourites);
@@ -412,6 +421,12 @@ public class MainActivity
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if(BlueUtility.isLocationEnabled(this) == false)
+            BlueUtility.requestGps(this);
+
+        if(BlueUtility.isBleSupported())
+            if(BlueUtility.isBluetoothEnabled() == false)
+                BlueUtility.requestBluetoothAccess(this);
 
         initContentView();
         locationManager.setHighAccuracy();
@@ -436,12 +451,7 @@ public class MainActivity
         if(isFullScreen())
             showFullscreenNotification();
 
-        if(BlueUtility.isLocationEnabled(this) == false)
-            BlueUtility.requestGps(this);
 
-        if(BlueUtility.isBleSupported())
-            if(BlueUtility.isBluetoothEnabled() == false)
-                BlueUtility.requestBluetoothAccess(this);
 
         if(centralConnection.getCachedWebAppList() != null && webAppController != null)
             webAppController.start(centralConnection.getCachedWebAppList(), this);
@@ -506,6 +516,7 @@ public class MainActivity
     boolean toolbarHidden = false;
     public void hideBottomBar() {
         if(bottomBarHidden) return;
+
         getBottomBar().animate().translationY( pxFromDp(130) ).setDuration(600).start();
         DisplayMetrics displayMetrics = new DisplayMetrics();
         WindowManager windowmanager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);

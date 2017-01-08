@@ -1,5 +1,6 @@
 package com.nagash.appwebbrowser.controller.fragments.map;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.Menu;
@@ -8,6 +9,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.nagash.appwebbrowser.R;
@@ -108,6 +111,15 @@ public class WebAppMapFragment
         googleMap.setOnMapClickListener(this);
         getGoogleMap().setOnMarkerClickListener(this);
         //getGoogleMap().getUiSettings().setMapToolbarEnabled(true);
+    }
+
+    @Override
+    protected BitmapDescriptor getDefaultMarkerIcon() {
+//        return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+//
+        return BitmapDescriptorFactory.defaultMarker(171);
+//        return BitmapDescriptorFactory.defaultMarker(174);
+
     }
 
     private CharSequence titleBackup = null;

@@ -56,7 +56,7 @@ public class WebAppContainerFragment
         super();
         setColorID(R.color.colorWebAppPrimary);
         setColorDarkID(R.color.colorWebAppPrimaryDark);
-        setTitle("WebApp Browser");
+        setTitle(R.string.webapp_fragment_actionbar_title);
 
         this.progressBarWebApp = null;
         this.textViewWebApp = null;
@@ -162,15 +162,18 @@ public class WebAppContainerFragment
     }
 
     public void startApp( WebApp webApp) {
+        if(runningWebApp) {
+            closeApp();
+        }
         this.webApp = webApp;
-        super.setTitle("Running: " + webApp.getName());
+        super.setTitle(webApp.getName());
         startApp();
     }
 
     private void startApp() {
         if(getActivity() != null && webApp != null && runningWebApp == false)
         {
-            //enterFullscreen(); // TODO: visual bug when entering fullscreen before starting the app
+            //enterFullscreen(); // TODO: There is a visual bug if we force entering fullscreen before starting the app
             showAppLoading();
             boolean cached = isLastVersionCached();
             if(!cached) {
@@ -276,20 +279,21 @@ public class WebAppContainerFragment
     public void closeApp()
     {
 
-        super.setTitle(R.string.webapp_fragment_actionbar_title);
-        super.updateActionBar();
         if(this.runningWebApp && this.reactFragment!=null && this.webApp != null)
         {
+            super.setTitle(R.string.webapp_fragment_actionbar_title);
+            super.updateActionBar();
             reactFragment.close();
             FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
             ft.hide(this.reactFragment);
             ft.remove(this.reactFragment);
             ft.commit();
+            showAppNotLoaded();
+            this.reactFragment = null;
+            this.runningWebApp = false;
+            getActivity().invalidateOptionsMenu();
         }
-        showAppNotLoaded();
-        this.reactFragment = null;
-        this.runningWebApp = false;
-        getActivity().invalidateOptionsMenu();
+
 
     }
 
