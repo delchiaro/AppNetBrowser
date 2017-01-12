@@ -2,13 +2,13 @@ if you get: failed to execute aapt --> try to change the build.gradle of the app
 
 ReactNative version: 0.40
 
-ESSENZIALI (NATIVE, RICHIEDONO MODIFICHE AL BROWSER):
+ESSENTIAL (NATIVE, REQUIRE CHANGES TO BROWSER):
 https://github.com/xinthink/react-native-material-kit
 https://github.com/anarchicknight/react-native-communications
 https://github.com/oblador/react-native-vector-icons
 
 
-SUPERFLUI (JS_ONLY, NON RICHIEDONO MODIFICHE AL BROWSER, SOLO AL PROGETTO CON IL QUALE SI SVILUPPA L'APP):
+UNNECESSARY (JS-ONLY, DO NOT REQUIRE CHANGES TO BROWSER, ONLY TO THE REACT-NATIE PROJECT WITH WHICH YOU DEVELOP THE JS APP):
 https://github.com/react-native-community/react-native-navbar
 https://github.com/redbaron76/navbar-native
 https://github.com/machadogj/react-native-carousel-control
