@@ -1,0 +1,35 @@
+package tutorial;
+
+
+
+message WebApp {
+  required int32 id 			= 1;
+
+  required string appId 		= 2;
+  required string appName 		= 3;
+
+  required int32 versionCode 	= 4;
+
+  optional string versionName 	= 5;
+
+
+
+
+  optional string indexFile 		= 6 [default="index.bundle"];
+  optional string indexFileAndroid 	= 7 [default="index.android.bundle"];
+  optional string indexFileIos 		= 8 [default="index.ios.bundle"];
+
+  optional string MainClass 		= 9  [default="main"];
+  optional string MainAndroidClass 	= 10 [default="main"];
+  optional string MainIosClass 		= 11 [default="main"];
+
+}
+
+message User {
+  required int32 id = 1;
+  required string username = 2;
+  required string password = 3;
+  required string email = 4;
+  repeated WebApp app = 5;
+}
+

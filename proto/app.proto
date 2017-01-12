@@ -1,0 +1,39 @@
+package protobuf.app;
+
+
+message EddystoneBeacon{
+	optional string URL=1;	
+	optional string	UID_namespace =2;
+	optional string	UID_instance =3;
+	optional string TLM=4;
+}
+
+
+message WebApp {
+  optional int32 id 			= 1 [default=-1];
+
+  optional string appId 		= 2 [default="<no-id>"];
+  optional string appName 		= 3 [default="<Unnamed>"];
+  optional int32  versionCode 	= 4 [default=-1];
+
+  optional string versionName 	= 5 [default="0.0"];
+
+  optional string lat=6;
+  optional string long=7;
+  
+  optional EddystoneBeacon beacon=8;
+
+  optional string indexFile 		= 9  [default="index.bundle"];
+  optional string indexFileAndroid 	= 10 [default="index.android.bundle"];
+  optional string indexFileIos 		= 11 [default="index.ios.bundle"];
+
+  optional string MainClass 		= 12 [default="main"];
+  optional string MainAndroidClass 	= 13 [default="main"];
+  optional string MainIosClass 		= 14 [default="main"];
+
+}
+
+
+message AppList {
+	repeated WebApp app = 1;
+}
