@@ -72,7 +72,10 @@ should be simple.**
   
 
 # AppNet Structure
-img
+![AppNet Structure description image](https://raw.githubusercontent.com/nagash91/AppWebBrowser/master/img/AppNet_structure.png)
 
 # AppNet Browser
+![AppNet Browser Screenshot](https://raw.githubusercontent.com/nagash91/AppWebBrowser/master/img/screenshots.gif)
+
+
 
