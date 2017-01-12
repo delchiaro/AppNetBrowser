@@ -1,0 +1,29 @@
+if you get: failed to execute aapt --> try to change the build.gradle of the app and react-native-material-kit such that they have the same version of compileSDK, build tools  and so on.
+
+ReactNative version: 0.40
+
+ESSENZIALI (NATIVE, RICHIEDONO MODIFICHE AL BROWSER):
+https://github.com/xinthink/react-native-material-kit
+https://github.com/anarchicknight/react-native-communications
+https://github.com/oblador/react-native-vector-icons
+
+
+SUPERFLUI (JS_ONLY, NON RICHIEDONO MODIFICHE AL BROWSER, SOLO AL PROGETTO CON IL QUALE SI SVILUPPA L'APP):
+https://github.com/react-native-community/react-native-navbar
+https://github.com/redbaron76/navbar-native
+https://github.com/machadogj/react-native-carousel-control
+https://github.com/mastermoo/react-native-action-button
+
+
+
+
+for landscape/portrate: https://corbt.com/posts/2016/03/16/detecting-orientation-in-react-native.html
+for redux look at here: https://medium.com/@jonlebensold/getting-started-with-react-native-redux-2b01408c0053#.2yu40e8e3
+
+
+Others:
+https://github.com/chirag04/react-native-mail
+
+
+
+
