@@ -1,4 +1,4 @@
-package com.nagash.appwebbrowser.model.beacon.estimote.iBeacon;
+package com.nagash.appwebbrowser.zz_deprecated.model.beacon.estimote.iBeacon;
 
 import com.estimote.sdk.Beacon;
 

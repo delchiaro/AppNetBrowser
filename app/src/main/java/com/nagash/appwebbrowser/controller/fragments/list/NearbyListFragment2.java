@@ -112,8 +112,8 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_nearby, menu);
-        MenuItem menuItemBeaconTest =  menu.findItem(R.id.start_beacon_test);
+        //inflater.inflate(R.menu.menu_nearby, menu);
+        //MenuItem menuItemBeaconTest =  menu.findItem(R.id.start_beacon_test);
     }
 
     @Override
@@ -223,8 +223,12 @@ public class NearbyListFragment2 extends MainFragment implements WebAppListener
 
         updateNarbyApps(nearbyNotProxy, currentLocation);
         updateProxyApps(proxyAndBeaconList, currentLocation);
-        getMainActivity().setNearbyAppsCounter(proxyAndBeaconList.size());
 
+        getMainActivity().setNearbyAppsCounter(proxyAndBeaconList.size());
+        if(beaconApps.size() > 0) {
+            getMainActivity().setNearestBeaconFabApp(beaconApps.iterator().next());
+        }
+        else getMainActivity().setNearestBeaconFabApp(null);
     }
 
     public void updateNarbyApps(Collection<WebApp> nearby, Location myLocation) {

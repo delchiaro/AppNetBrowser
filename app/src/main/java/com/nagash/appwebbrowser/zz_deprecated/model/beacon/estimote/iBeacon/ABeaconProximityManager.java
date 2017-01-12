@@ -1,4 +1,4 @@
-//package com.nagash.appwebbrowser.model.beacon.beaconHelper;
+//package com.nagash.appwebbrowser.zz_deprecated.model.beacon.beaconHelper;
 //
 //import android.app.Activity;
 //

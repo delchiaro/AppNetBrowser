@@ -95,6 +95,7 @@ public class WebAppController
         if(BlueUtility.isBleSupported()) {
             eddystoneProximityManager = new EddystoneProximityManager(EddystoneScanner.getInstance(activity), eddystoneSettings);
             eddystoneProximityManager.addListener(this);
+            eddystoneProximityManager.setProximityDistance(1.2);
             eddystoneProximityManager.start();
         }
 
@@ -129,11 +130,13 @@ public class WebAppController
         boolean changes = false;
         for( Eddystone e : paramSet) {
             WebApp app = webAppBeaconMap.get(e.namespace + e.instance);
-            app.setUserNearBeacon(false);
+            if(app!=null) {
+                app.setUserNearBeacon(false);
 //            appsBeaconRemovedInLastScan.add( app );
-            appsBeacon.remove( app );
+                appsBeacon.remove(app);
 //            appsNearby.add(app);
-            changes = true;
+                changes = true;
+            }
         }
 
         if( changes )
@@ -144,11 +147,13 @@ public class WebAppController
         boolean changes = false;
         for( Eddystone e : paramSet) {
             WebApp app = webAppBeaconMap.get(e.namespace + e.instance);
-            app.setUserNearBeacon(true);
-            appsBeacon.add( app );
-           // appsBeaconRemovedInLastScan.remove( app );
-           // appsNearby.remove(app);
-            changes = true;
+            if(app != null) {
+                app.setUserNearBeacon(true);
+                appsBeacon.add(app);
+                // appsBeaconRemovedInLastScan.remove( app );
+                // appsNearby.remove(app);
+                changes = true;
+            }
         }
         if( changes )
             callListeners(appsBeacon, appsProxy, appsNearby);

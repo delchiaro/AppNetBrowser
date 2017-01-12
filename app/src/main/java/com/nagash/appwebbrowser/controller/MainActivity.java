@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +18,6 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +26,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.nagash.appwebbrowser.R;
 import com.nagash.appwebbrowser.controller.webAppController.WebAppController;
 import com.nagash.appwebbrowser.utils.BlueUtility;
@@ -40,12 +37,9 @@ import com.nagash.appwebbrowser.model.webapp.FavouriteAppsManager;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.BottomBarTab;
-import com.roughike.bottombar.OnTabReselectListener;
 import com.roughike.bottombar.OnTabSelectListener;
 
 import java.util.List;
-
-import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 
 /**
  * Created by nagash on 14/09/16.
@@ -58,6 +52,11 @@ public class MainActivity
         AppListDownloadHandler,
         LocationEventListener
 {
+
+    private static final boolean SHOW_GPS_UPDATE_TOAST = false;
+    private static final boolean SHOW_BEACON_DEBUG_BUTTON = false;
+
+
 
     private static MainActivity mainActivity = null;
     protected static MainActivity getMainActivity() {
@@ -92,26 +91,44 @@ public class MainActivity
 
 
     //  TODO: embed fab in classs
-    private enum FabProximityStatus { Hidden, Visible }
-    private      FabProximityStatus  fabProximityStatus     = FabProximityStatus.Hidden;
-    private FloatingActionButton     fabProximity           = null;
-    public  FloatingActionButton     getFabProximity()      { return fabProximity;  }
-    public  void                     updateFabVisibility()  {
-        if(fragCtrl.getMainMode() != MainMode.WEBAPP)
+    private enum FabBeaconStatus { Hidden, Visible }
+    private FabBeaconStatus fabBeaconStatus = FabBeaconStatus.Hidden;
+    private FloatingActionButton fabBeacon = null;
+    private WebApp nearestBeaconFabApp = null;
+    public  FloatingActionButton getFabBeacon()      { return fabBeacon;  }
+    public void setNearestBeaconFabApp(WebApp app) {
+        if(app != null) {
+            this.fabBeaconStatus = FabBeaconStatus.Visible;
+            nearestBeaconFabApp = app;
+            updateFabVisibility();
+        }
+        else if(nearestBeaconFabApp != null){
+            this.fabBeaconStatus = FabBeaconStatus.Hidden;
+            updateFabVisibility();
+            nearestBeaconFabApp = null;
+        }
+    }
+    public  void updateFabVisibility()  {
+        if(fragCtrl.getMainMode() == MainMode.WEBAPP) {
+            fabBeacon.hide();
+        }
+        else
         {
-            if(fabProximityStatus == FabProximityStatus.Visible)
+            if(fabBeaconStatus == FabBeaconStatus.Visible)
             {
-                if(proximityApp != null && proximityApp == activeWebApp)
-                    fabProximity.setImageResource(R.drawable.ic_cast_connected_black_24dp);
-                else fabProximity.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                fabProximity.show();
+                if(nearestBeaconFabApp != null && nearestBeaconFabApp == activeWebApp) {
+                    //fabBeacon.setImageResource(R.drawable.ic_cast_connected_black_24dp);
+                    fabBeacon.hide();
+                }
+                else{
+                    //fabBeacon.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    fabBeacon.show();
+                }
             }
-            else if(fabProximityStatus == FabProximityStatus.Hidden)
-                fabProximity.hide();
+            else if(fabBeaconStatus == FabBeaconStatus.Hidden)
+                fabBeacon.hide();
 
         }
-        else fabProximity.hide();
-
     }
 
 
@@ -165,18 +182,14 @@ public class MainActivity
      * * * * * * * * * * * * * * * LOCATION  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     @Override public void onLocationChanged(Location location) {
-        Toast.makeText(this, "Location changed: " + location.getLatitude() + ", " + location.getLongitude() + "\nAccuracy: " + location.getAccuracy()
+        if(SHOW_GPS_UPDATE_TOAST)
+            Toast.makeText(this, "Location changed: " + location.getLatitude() + ", " + location.getLongitude() + "\nAccuracy: " + location.getAccuracy()
                 , Toast.LENGTH_SHORT).show();
     }
     @Override public void onConnected(Location myLastLocation) {
-
     }
-    @Override public void onConnectionSuspended() {
-
-    }
-    @Override public void onConnectionFailed() {
-
-    }
+    @Override public void onConnectionSuspended() {}
+    @Override public void onConnectionFailed() {}
 
     public LocationManager getLocationManager() { return locationManager; }
 
@@ -191,14 +204,14 @@ public class MainActivity
 //        if(triggeredGeofences.size() == 0)
 //        {
 //            this.proximityApp = null;
-//            fabProximityStatus = FabProximityStatus.Hidden;
+//            fabBeaconStatus = FabBeaconStatus.Hidden;
 //        }
 //        else
 //        {
 //            //Toast.makeText(this, "GeofenceObject Triggered!", Toast.LENGTH_SHORT).show();
 //            final GeofenceObject<WebApp> nearest = triggeredGeofences.first();
 //            this.proximityApp = nearest.getManagedObject();
-//            fabProximityStatus = FabProximityStatus.Visible;
+//            fabBeaconStatus = FabBeaconStatus.Visible;
 //
 //        }
 //        updateFabVisibility();
@@ -248,7 +261,6 @@ public class MainActivity
      * * * * * * * * * * * * * * *  WEBAPP MANAGEMENT  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     private WebAppController webAppController       = null;
-    private WebApp               proximityApp           = null;
     private WebApp               activeWebApp           = null;
     public void startAppFragment(WebApp webApp) {
         //Get the reference to the ReactInstanceManager
@@ -261,6 +273,7 @@ public class MainActivity
     public void closeWebApp() {
         fragCtrl.getWebAppContainerFragment().exitFullscreen();
         fragCtrl.getWebAppContainerFragment().closeApp();
+        activeWebApp = null;
     }
     // public WebApp                   getProximityApp()   { return proximityApp;  }
     // public WebApp                   getActiveWebApp()   { return activeWebApp;  }
@@ -271,6 +284,13 @@ public class MainActivity
             nearby.removeBadge();
         else nearby.setBadgeCount(counter);
     }
+    public void setRunningAppsCounter(int counter) {
+        BottomBarTab webAppTab = bottomBar.getTabWithId(R.id.tab_webapp);
+        if(counter <= 0)
+            webAppTab.removeBadge();
+        else webAppTab.setBadgeCount(counter);
+    }
+
     private void initWebAppController() {
         webAppController = new WebAppController(locationManager);
         webAppController.setOnUpdateListener(fragCtrl.getNearbyListFragment());
@@ -301,21 +321,21 @@ public class MainActivity
 
         bottomBar = (BottomBar) findViewById(R.id.bottomBar);
         toolbar   = (Toolbar) findViewById(R.id.toolbar);
-        fabProximity = (FloatingActionButton) findViewById(R.id.fab_proximity);
-        fabProximity.hide();
+        fabBeacon = (FloatingActionButton) findViewById(R.id.fab_proximity);
+        fabBeacon.hide();
 
 
-        fabProximityStatus = FabProximityStatus.Hidden;
+        fabBeaconStatus = FabBeaconStatus.Hidden;
 
-        fabProximity.setOnClickListener(
+        fabBeacon.setOnClickListener(
                 new View.OnClickListener() {
                     @Override public void onClick(View view) {
-                        if(proximityApp != null) {
-                            startAppFragment(proximityApp);
+                        if(nearestBeaconFabApp != null) {
+                            startAppFragment(nearestBeaconFabApp);
                         }
 
-//                        fabProximityStatus = FabProximityStatus.Hidden;
-//                        fabProximity.hide();
+//                        fabBeaconStatus = FabBeaconStatus.Hidden;
+//                        fabBeacon.hide();
                     }
                 });
 

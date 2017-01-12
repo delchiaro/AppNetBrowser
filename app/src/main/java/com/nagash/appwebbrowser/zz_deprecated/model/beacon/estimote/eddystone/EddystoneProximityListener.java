@@ -1,4 +1,4 @@
-package com.nagash.appwebbrowser.model.beacon.estimote.eddystone;
+package com.nagash.appwebbrowser.zz_deprecated.model.beacon.estimote.eddystone;
 
 import com.estimote.sdk.eddystone.Eddystone;
 

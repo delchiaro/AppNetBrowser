@@ -1,12 +1,10 @@
 package com.nagash.appwebbrowser.controller.fragments.map;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -14,7 +12,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.nagash.appwebbrowser.R;
-import com.nagash.appwebbrowser.controller.MainFragment;
 import com.nagash.appwebbrowser.model.webapp.WebApp;
 
 /**
@@ -158,13 +155,13 @@ public class WebAppMapFragment
 
 
     private void animateFAB_UP() {
-        getMainActivity().getFabProximity().animate()
+        getMainActivity().getFabBeacon().animate()
                 .translationY( -140 )
                 .setDuration(600)
                 .start();
     }
     private void animateFAB_DOWN() {
-        getMainActivity().getFabProximity().animate()
+        getMainActivity().getFabBeacon().animate()
                 .translationY( 0 )
                 .setDuration(600)
                 .start();

@@ -192,7 +192,9 @@ public class GeofenceManager<T extends Geofenceable> implements AsyncTimerListen
             locationChanged = true;
 
     }
-    @Override public void onConnected(Location myLastLocation) {}
+    @Override public void onConnected(Location myLastLocation) {
+        onLocationChanged(myLastLocation);
+    }
     @Override public void onConnectionSuspended() {}
     @Override public void onConnectionFailed() {}
 

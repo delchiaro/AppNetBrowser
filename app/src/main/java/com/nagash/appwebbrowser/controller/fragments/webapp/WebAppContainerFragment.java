@@ -81,7 +81,7 @@ public class WebAppContainerFragment
 
     @Override public void onFragmentShown() {
         super.onFragmentShown();
-        getMainActivity().getFabProximity().hide();
+        getMainActivity().getFabBeacon().hide();
     }
 
 
@@ -212,6 +212,7 @@ public class WebAppContainerFragment
                 loadingWebApp = false;
                 runningWebApp = true;
                 getActivity().invalidateOptionsMenu();
+                getMainActivity().setRunningAppsCounter(1);
             }
         });
 
@@ -292,6 +293,8 @@ public class WebAppContainerFragment
             this.reactFragment = null;
             this.runningWebApp = false;
             getActivity().invalidateOptionsMenu();
+            getMainActivity().setRunningAppsCounter(0);
+            getMainActivity().closeWebApp();
         }
 
 
@@ -305,6 +308,7 @@ public class WebAppContainerFragment
         //getMainActivity().hideBottomBar();
 
         DisplayMetrics dm = new DisplayMetrics();
+        // getSystemService("Context.WINDOW_SERVICE"); // use this instead???
         ((WindowManager)getActivity().getSystemService("window")).getDefaultDisplay().getMetrics(dm);
         int displayHeight = dm.heightPixels;
         int statusbarHeight= getMainActivity().getStatusBarHeight();

@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">AppWebBrowser</string>
-    <string name="server_list_connecting">Connecting to central server...</string>
+    <string name="app_name">AppNet Browser</string>
+    <string name="server_list_connecting">Connecting to Central Server...</string>
     <string name="server_list_connected">App list:</string>
     <string name="server_list_not_available">Can\'t connect to central server :(</string>
     <string name="title_activity_scrolling">ScrollingActivity</string>

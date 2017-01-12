@@ -38,14 +38,19 @@ public class GeofenceScanTask<T extends Geofenceable>  extends AsyncTask<Collect
     @Override
     protected TriggeredGeofenceableContainer<T> doInBackground(Collection<GeofenceObject<T>>... list)
     {
-        TriggeredGeofenceableContainer<T> tgl = new TriggeredGeofenceableContainer(new GeofenceableObjectComparator(myLocation));
 
+        TriggeredGeofenceableContainer<T> tgl = new TriggeredGeofenceableContainer(new GeofenceableObjectComparator(myLocation));
+        if(myLocation == null)
+            return tgl;
 
         Collection<GeofenceObject<T>> set = list[0];
         if(set == null) return null;
 
         for(GeofenceObject<T> geoObj : set)
         {
+            if(geoObj == null)
+                continue; // TODO: refactor the jump
+
             GeoStatus newGeoStatus;
             geoObj.getProximityRadius();
             if(options.isUsingExtraRadius()) {

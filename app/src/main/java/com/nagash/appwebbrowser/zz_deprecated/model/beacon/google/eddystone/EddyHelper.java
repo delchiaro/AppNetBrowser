@@ -1,4 +1,4 @@
-package com.nagash.appwebbrowser.model.beacon.google.eddystone;
+package com.nagash.appwebbrowser.zz_deprecated.model.beacon.google.eddystone;
 
 /**
  * Created by nagash on 15/10/16.
