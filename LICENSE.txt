@@ -637,7 +637,7 @@ the "copyright" line and a pointer to where the full notice is found.
         or another devices that act as a bluetooth beacon.
     AppNet Browser (AppWeb Browser): a client to access to the AppNet.
         Users can start the Web App from the client, searching them on a 
-        real-wolrd map or on a nearby web app list, based on gps position
+        real-world map or on a nearby web app list, based on gps position
         of user and web app, and on bluetooth beacon packages that user
     Copyright (C) 2017  Riccardo Del Chiaro
 
