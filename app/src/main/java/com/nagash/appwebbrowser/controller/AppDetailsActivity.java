@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -50,6 +51,7 @@ public class AppDetailsActivity extends AppCompatActivity {
 
 
     @Override protected void onCreate(Bundle savedInstanceState) {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true); // TODO: test with API device > 21
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         webApp = getIntent().getExtras().getParcelable(INTENT_EXTRA_WEBAPP_KEY);

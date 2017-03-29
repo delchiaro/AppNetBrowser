@@ -8,18 +8,16 @@ apply from: "../node_modules/react-native-vector-icons/fonts.gradle"
 
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 25
+    buildToolsVersion '25.0.1'
 
     defaultConfig {
         applicationId "com.nagash.appwebbrowser"
         minSdkVersion 16
-        targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 25
+        versionCode 3
+        versionName "1.0.2"
         vectorDrawables.useSupportLibrary = true
-
-
     }
     buildTypes {
         release {
@@ -33,24 +31,24 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
 
-    compile 'com.android.support:appcompat-v7:24.0.+'
-    compile 'com.android.support:cardview-v7:24.0.+'
-    compile 'com.android.support:recyclerview-v7:24.0.+'
-    compile 'com.android.support:design:24.2.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:cardview-v7:25.0.1'
+    compile 'com.android.support:recyclerview-v7:25.0.1'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support.constraint:constraint-layout:1.+'
     //compile 'com.android.support:multidex:1.0.0'
 
-    compile 'com.google.android.gms:play-services-location:9.4.0'
-    compile 'com.google.android.gms:play-services-maps:9.4.0'
+    compile 'com.google.android.gms:play-services-location:9.6.1'
+    compile 'com.google.android.gms:play-services-maps:9.6.1'
     //compile 'com.google.android.gms:play-services-nearby:9.4.0' // Eddystone Beacon (google)
 
     compile files('libs/protobuf-java-2.6.1.jar')
-    compile 'com.estimote:sdk:0.13.0@aar'
+    compile 'com.estimote:sdk:0.16.0@aar'
     //compile 'com.estimote:sdk:0.11.1@aar'
 
 
     compile 'com.aurelhubert:ahbottomnavigation:2.0.3'
-    compile 'com.roughike:bottom-bar:2.0.2'
+    compile 'com.roughike:bottom-bar:2.2.0'
     compile 'com.github.douglasjunior:android-simple-tooltip:0.1.2' //Tooltip for bottom bar
     compile 'com.github.gabrielemariotti.cards:cardslib-core:2.1.0'
 

@@ -16,6 +16,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Menu;
@@ -439,6 +440,7 @@ public class MainActivity
      * * * * * * * * * * * * * * * MANAGE ACTIVITY LIFECYCLE * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     @Override protected void onCreate(Bundle savedInstanceState) {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true); // TODO: test with API device > 21
         super.onCreate(savedInstanceState);
 
         if(BlueUtility.isLocationEnabled(this) == false)
@@ -652,10 +654,9 @@ public class MainActivity
         Intent nid = new Intent(this, NotificationActionService.class);
         // If you were starting a service, you wouldn't using getActivity() here
         PendingIntent ci = PendingIntent.getService(this, FULLSCREEN_NOTIFICATION_ID, nid, PendingIntent.FLAG_UPDATE_CURRENT);
-
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_up_down_arrows_white_24dp)
+                        .setSmallIcon(R.drawable.ic_up_down_arrows)
                         .setContentTitle("WebApp in fullscreen mode")
                         .setContentText("Tap to exit fullscreen mode")
                         .setAutoCancel(true)
