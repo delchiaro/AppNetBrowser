@@ -96,21 +96,23 @@ public class BlueUtility {
 
     /**
      * Function to show settings alert dialog
+     * TODO: use this method http://stackoverflow.com/questions/33251373/turn-on-location-services-without-navigating-to-settings-page
      * */
     public static void requestGps(final Context mContext){
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
 
         // Setting Dialog Title
-        alertDialog.setTitle("GPS is settings");
+        alertDialog.setTitle("Location is disabled");
 
         // Setting Dialog Message
-        alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+        alertDialog.setMessage("To use this application location must be enabled." +
+                               "Do you want to open location settings to enable Location service?");
 
         // Setting Icon to Dialog
         //alertDialog.setIcon(R.drawable.delete);
 
         // On pressing Settings button
-        alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+        alertDialog.setPositiveButton("Location Settings", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog,int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 mContext.startActivity(intent);

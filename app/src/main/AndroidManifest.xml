@@ -28,6 +28,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+
+        <!-- Support for screens 18.5:9 (Galaxy S8, LG G6) -->
+        <meta-data android:name="android.max_aspect" android:value="2.1" />
+
+
         <!-- "@style/Theme.AppCompat.Light.NoActionBar" -->
 
         <meta-data
