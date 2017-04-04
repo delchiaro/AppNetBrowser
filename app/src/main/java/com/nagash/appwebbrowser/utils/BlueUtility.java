@@ -105,7 +105,7 @@ public class BlueUtility {
         alertDialog.setTitle("Location is disabled");
 
         // Setting Dialog Message
-        alertDialog.setMessage("To use this application location must be enabled." +
+        alertDialog.setMessage("To use this application location must be enabled. " +
                                "Do you want to open location settings to enable Location service?");
 
         // Setting Icon to Dialog
