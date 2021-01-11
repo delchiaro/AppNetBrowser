@@ -1,5 +1,9 @@
 # AppNet: A new concept of Internet
-######PDF Presentation: [download pdf](https://raw.githubusercontent.com/nagash91/AppWebBrowser/master/docs/AppNet_presentation_1.0.pdf)
+*Positional and proximity access to react-native applications for android devices.*
+
+
+###### PDF Presentation: [download pdf](https://raw.githubusercontent.com/nagash91/AppWebBrowser/master/docs/AppNet_presentation_1.0.pdf)
+
 ### What we hate
 Difficulty in finding certain **small information quickly**.
 * “Where can I find the bus timetable under my hotel?”
@@ -75,6 +79,8 @@ should be simple.**
 
 # AppNet Browser
 ![AppNet Browser Screenshot](https://raw.githubusercontent.com/nagash91/AppWebBrowser/master/img/screenshots.gif)
+
+
 
 
 
