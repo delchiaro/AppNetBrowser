@@ -1,5 +1,4 @@
 # AppNet: A new concept of Internet
-######NB: AppWeb is the "beta name" of AppNet.
 ######PDF Presentation: [download pdf](https://raw.githubusercontent.com/nagash91/AppWebBrowser/master/docs/AppNet_presentation_1.0.pdf)
 ### What we hate
 Difficulty in finding certain **small information quickly**.
